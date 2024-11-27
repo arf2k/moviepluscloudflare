@@ -23,14 +23,17 @@ const fetchMovies = async (query) => {
   }
 };
 
-// Display movie results
+// Display movie results with posters
 const displayMovies = (movies) => {
   movieResults.innerHTML = movies
     .map(
       (movie) => `
       <div class="movie">
-        <span>${movie.Title} (${movie.Year})</span>
-        <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
+        <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/100x150'}" alt="${movie.Title}" class="movie-poster">
+        <div class="movie-info">
+          <span>${movie.Title} (${movie.Year})</span>
+          <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
+        </div>
       </div>
     `
     )
@@ -62,4 +65,15 @@ const updateFavoritesList = () => {
       </div>
     `
     )
-    .join
+    .join('');
+};
+
+// Event listener for search input
+movieSearchInput.addEventListener('input', (e) => {
+  const query = e.target.value.trim();
+  if (query.length > 2) {
+    fetchMovies(query);
+  } else {
+    movieResults.innerHTML = '';
+  }
+});
