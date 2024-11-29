@@ -3,31 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movie Favorites App</title>
+  <title>Movie Finder</title>
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
   <header>
-    <h1>Movie Favorites App</h1>
+    <h1>Movie Finder</h1>
   </header>
   <div class="container">
-    <!-- Movies Section -->
-    <div class="section" id="movie-results-section">
-      <h2>Searched Movies</h2>
-      <div id="movie-results">
-        <!-- Searched movies will be dynamically injected here -->
-      </div>
+    <div id="search-section">
+      <label for="movie-search">Search for a Movie:</label>
+      <input type="text" id="movie-search" placeholder="Type to search...">
     </div>
-
-    <!-- Favorites Section -->
-    <div class="section" id="favorites-section">
-      <h2>Favorites List</h2>
-      <div id="favorites-list">
-        <!-- Favorite movies will be dynamically injected here -->
-      </div>
+    <div id="results-section">
+      <h2>Search Results</h2>
+      <div id="movie-results"></div>
+    </div>
+    <div id="favorites-section">
+      <h2>Favorites</h2>
+      <div id="favorites-list"></div>
     </div>
   </div>
-  <script src="js/script.js"></script>
+  <script src="js/script.js" defer></script>
 </body>
 </html>
