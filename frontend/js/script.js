@@ -27,11 +27,11 @@ const displayMovies = (movies) => {
   movieResults.innerHTML = movies
     .map(
       (movie) => `
-      <div class="movie">
-        <span>${movie.Title} (${movie.Year})</span>
-        <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
-      </div>
-    `
+        <div class="movie">
+          <span>${movie.Title} (${movie.Year})</span>
+          <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
+        </div>
+      `
     )
     .join('');
 };
@@ -55,11 +55,11 @@ const updateFavoritesList = () => {
   favoritesList.innerHTML = favorites
     .map(
       (title) => `
-      <div class="movie">
-        <span>${title}</span>
-        <button onclick="removeFromFavorites('${title}')">Remove</button>
-      </div>
-    `
+        <div class="movie">
+          <span>${title}</span>
+          <button onclick="removeFromFavorites('${title}')">Remove</button>
+        </div>
+      `
     )
     .join('');
 };

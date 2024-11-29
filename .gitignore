@@ -30,3 +30,4 @@ build/
 .cache/
 .vscode/
 
+.dev.vars
