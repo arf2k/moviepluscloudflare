@@ -1,8 +1,0 @@
-name = "moviepluscloudflare"
-main = "frontend/js/script.js" # Path to your Worker entry point
-
-compatibility_date = "2024-11-29"
-
-[build]
-command = "" # Leave blank for no build step
-cwd = "frontend" # Directory where your static files are located
