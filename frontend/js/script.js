@@ -8,8 +8,11 @@ let favorites = [];
 // Fetch movies via the Cloudflare Worker
 const fetchMovies = async (query) => {
   try {
+    console.log(`Fetching movies for query: ${query}`);
     const response = await fetch(`${baseWorkerUrl}?s=${query}`);
     const data = await response.json();
+
+    console.log('API Response:', data);
 
     if (data.Search) {
       displayMovies(data.Search);
@@ -24,6 +27,7 @@ const fetchMovies = async (query) => {
 
 // Display movie results
 const displayMovies = (movies) => {
+  console.log('Movies to display:', movies);
   movieResults.innerHTML = movies
     .map(
       (movie) => `
@@ -38,6 +42,7 @@ const displayMovies = (movies) => {
 
 // Add to favorites
 const addToFavorites = (movieTitle) => {
+  console.log(`Adding to favorites: ${movieTitle}`);
   if (!favorites.includes(movieTitle)) {
     favorites.push(movieTitle);
     updateFavoritesList();
@@ -46,12 +51,14 @@ const addToFavorites = (movieTitle) => {
 
 // Remove from favorites
 const removeFromFavorites = (movieTitle) => {
+  console.log(`Removing from favorites: ${movieTitle}`);
   favorites = favorites.filter((title) => title !== movieTitle);
   updateFavoritesList();
 };
 
 // Update favorites list
 const updateFavoritesList = () => {
+  console.log('Favorites updated:', favorites);
   favoritesList.innerHTML = favorites
     .map(
       (title) => `
@@ -67,9 +74,12 @@ const updateFavoritesList = () => {
 // Event listener for search input
 movieSearchInput.addEventListener('input', (e) => {
   const query = e.target.value.trim();
+  console.log(`Search input: ${query}`);
   if (query.length > 2) {
     fetchMovies(query);
   } else {
     movieResults.innerHTML = '';
   }
 });
+
+console.log('Script end');
