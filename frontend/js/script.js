@@ -1,4 +1,4 @@
-const baseWorkerUrl = 'https://moviepluscloudflare-worker.foreman-alexander.workers.dev'; 
+const baseWorkerUrl = 'https://moviepluscloudflare-worker.foreman-alexander.workers.dev';
 const movieSearchInput = document.getElementById('movie-search');
 const movieResults = document.getElementById('movie-results');
 const favoritesList = document.getElementById('favorites-list');
