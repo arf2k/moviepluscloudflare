@@ -5,30 +5,60 @@ body {
     background-color: #f4f4f9;
     color: #333;
   }
+  
   header {
     background-color: #6200ea;
     color: white;
     text-align: center;
     padding: 1rem;
   }
+  
   .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem; /* Add space between the sections */
     margin: 1rem auto;
-    max-width: 600px;
+    max-width: 1200px;
     padding: 1rem;
     background: white;
     border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
+  
+  .section {
+    flex: 1; /* Ensures both sections take up equal width */
+  }
+  
+  .section h2 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
   .movie {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
+    margin: 1rem 0;
     border-bottom: 1px solid #ddd;
+    padding-bottom: 1rem;
   }
+  
   .movie:last-child {
     border-bottom: none;
   }
+  
+  .movie-poster {
+    width: 100px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 1rem;
+  }
+  
+  .movie-info {
+    flex: 1;
+  }
+  
   button {
     padding: 0.5rem;
     border: none;
@@ -37,10 +67,8 @@ body {
     color: white;
     cursor: pointer;
   }
+  
   button:hover {
     background-color: #3700b3;
-  }
-  .favorites-list {
-    margin-top: 1rem;
   }
   
