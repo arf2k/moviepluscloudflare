@@ -1,4 +1,4 @@
-const apiKey = '11f2c5e1'; // Replace with your OMDb API key
+const apiKey = 'ADDKEY'; // Replace with your OMDb API key
 const baseApiUrl = 'https://www.omdbapi.com/';
 const movieSearchInput = document.getElementById('movie-search');
 const movieResults = document.getElementById('movie-results');
