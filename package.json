@@ -4,5 +4,9 @@
   },
   "devDependencies": {
     "wrangler": "^3.91.0"
-  }
+  },
+  "scripts": {
+    "build": "echo 'No build step required'"
+}
+  
 }
