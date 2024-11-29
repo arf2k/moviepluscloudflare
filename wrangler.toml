@@ -1,3 +1,8 @@
-name = "moviepluscloudflare-worker"
-main = "worker/index.js"
-compatibility_date = "2024-11-29"
+name = "moviepluscloudflare"
+
+[build]
+command = "" # No build step needed
+cwd = "." # Current working directory
+output_dir = "." # Static files are in the root directory
+
+pages_build_output_dir = "./" 
