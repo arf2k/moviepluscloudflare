@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "g": "^2.0.1"
+  },
+  "devDependencies": {
+    "wrangler": "^3.91.0"
   }
 }
