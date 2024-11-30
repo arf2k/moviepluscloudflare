@@ -1,4 +1,4 @@
-const baseWorkerUrl = 'https://api.foremanalex.com'; // Use your working Worker URL
+const baseWorkerUrl = 'https://api.foremanalex.com'; // Your Worker URL
 const movieSearchInput = document.getElementById('movie-search');
 const movieResults = document.getElementById('movie-results');
 const favoritesList = document.getElementById('favorites-list');
@@ -8,8 +8,11 @@ let favorites = [];
 // Fetch movies via the Cloudflare Worker
 const fetchMovies = async (query) => {
   try {
+    console.log(`Fetching movies for query: ${query}`);
     const response = await fetch(`${baseWorkerUrl}?s=${query}`);
     const data = await response.json();
+
+    console.log('API Response:', data); // Debug API response
 
     if (data.Search) {
       displayMovies(data.Search);
@@ -24,6 +27,7 @@ const fetchMovies = async (query) => {
 
 // Display movie results
 const displayMovies = (movies) => {
+  console.log('Movies array:', movies); // Debug movies array
   const html = movies
     .map((movie) => {
       return `
@@ -36,14 +40,9 @@ const displayMovies = (movies) => {
     })
     .join('');
 
-  console.log('Generated HTML:', html); // Debugging generated HTML
-  movieResults.innerHTML = html; // Add to DOM
+  console.log('Generated HTML:', html); // Debug generated HTML
+  movieResults.innerHTML = html; // Inject into DOM
 };
-
-
-
-
-
 
 // Add to favorites
 const addToFavorites = (movieTitle) => {
@@ -61,7 +60,7 @@ const removeFromFavorites = (movieTitle) => {
 
 // Update favorites list
 const updateFavoritesList = () => {
-  favoritesList.innerHTML = favorites
+  const html = favorites
     .map(
       (title) => `
       <div class="movie">
@@ -71,6 +70,8 @@ const updateFavoritesList = () => {
     `
     )
     .join('');
+
+  favoritesList.innerHTML = html;
 };
 
 // Event listener for search input
@@ -81,4 +82,9 @@ movieSearchInput.addEventListener('input', (e) => {
   } else {
     movieResults.innerHTML = '';
   }
+});
+
+// Ensure DOM is fully loaded before running
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM fully loaded. Ready to execute scripts.');
 });
