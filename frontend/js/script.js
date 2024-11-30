@@ -24,28 +24,31 @@ const fetchMovies = async (query) => {
 
 // Display movie results
 const displayMovies = (movies) => {
-  console.log('Movies to display:', movies); // Debugging array of movies
-  
-  const html = movies
-    .map((movie) => {
-      // Debug each movie's properties
-      console.log('Title:', movie.Title, 'Year:', movie.Year, 'Poster:', movie.Poster);
-      
-      return `
-        <div class="movie">
-          <img src="${movie.Poster}" alt="${movie.Title} Poster" />
-          <span>${movie.Title} (${movie.Year})</span>
-          <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
-        </div>
-      `;
-    })
-    .join('');
+  try {
+    console.log('Movies to display:', movies); // Debugging array of movies
 
-  console.log('Generated HTML:', html); // Debugging generated HTML
-  movieResults.innerHTML = html; // Add to DOM
+    const html = movies
+      .map((movie) => {
+        console.log('Processing movie:', movie); // Log each movie object
+        return `
+          <div class="movie">
+            <img src="${movie.Poster}" alt="${movie.Title} Poster" />
+            <span>${movie.Title} (${movie.Year})</span>
+            <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
+          </div>
+        `;
+      })
+      .join('');
 
-  console.log('Updated movieResults.innerHTML:', movieResults.innerHTML); // Debugging DOM update
+    console.log('Generated HTML:', html); // Debugging generated HTML
+    movieResults.innerHTML = html; // Add to DOM
+
+    console.log('Updated movieResults.innerHTML:', movieResults.innerHTML); // Debugging DOM update
+  } catch (error) {
+    console.error('Error in displayMovies:', error);
+  }
 };
+
 
 
 
