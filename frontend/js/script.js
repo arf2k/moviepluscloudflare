@@ -1,4 +1,4 @@
-const baseWorkerUrl = 'https://moviepluscloudflare-worker.foreman-alexander.workers.dev';
+const baseWorkerUrl = 'https://api.foremanalex.com'; // Use your working Worker URL
 const movieSearchInput = document.getElementById('movie-search');
 const movieResults = document.getElementById('movie-results');
 const favoritesList = document.getElementById('favorites-list');
@@ -8,11 +8,8 @@ let favorites = [];
 // Fetch movies via the Cloudflare Worker
 const fetchMovies = async (query) => {
   try {
-    console.log(`Fetching movies for query: ${query}`);
     const response = await fetch(`${baseWorkerUrl}?s=${query}`);
     const data = await response.json();
-
-    console.log('API Response:', data);
 
     if (data.Search) {
       displayMovies(data.Search);
@@ -27,22 +24,21 @@ const fetchMovies = async (query) => {
 
 // Display movie results
 const displayMovies = (movies) => {
-  console.log('Movies to display:', movies);
   movieResults.innerHTML = movies
     .map(
       (movie) => `
-        <div class="movie">
-          <span>${movie.Title} (${movie.Year})</span>
-          <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
-        </div>
-      `
+      <div class="movie">
+        <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/150'}" alt="${movie.Title} Poster" />
+        <span>${movie.Title} (${movie.Year})</span>
+        <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
+      </div>
+    `
     )
     .join('');
 };
 
 // Add to favorites
 const addToFavorites = (movieTitle) => {
-  console.log(`Adding to favorites: ${movieTitle}`);
   if (!favorites.includes(movieTitle)) {
     favorites.push(movieTitle);
     updateFavoritesList();
@@ -51,22 +47,20 @@ const addToFavorites = (movieTitle) => {
 
 // Remove from favorites
 const removeFromFavorites = (movieTitle) => {
-  console.log(`Removing from favorites: ${movieTitle}`);
   favorites = favorites.filter((title) => title !== movieTitle);
   updateFavoritesList();
 };
 
 // Update favorites list
 const updateFavoritesList = () => {
-  console.log('Favorites updated:', favorites);
   favoritesList.innerHTML = favorites
     .map(
       (title) => `
-        <div class="movie">
-          <span>${title}</span>
-          <button onclick="removeFromFavorites('${title}')">Remove</button>
-        </div>
-      `
+      <div class="movie">
+        <span>${title}</span>
+        <button onclick="removeFromFavorites('${title}')">Remove</button>
+      </div>
+    `
     )
     .join('');
 };
@@ -74,14 +68,9 @@ const updateFavoritesList = () => {
 // Event listener for search input
 movieSearchInput.addEventListener('input', (e) => {
   const query = e.target.value.trim();
-  console.log(`Search input: ${query}`);
   if (query.length > 2) {
     fetchMovies(query);
   } else {
     movieResults.innerHTML = '';
   }
 });
-
-console.log('Script end');
-
-//test comment 
