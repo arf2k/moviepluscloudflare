@@ -24,9 +24,13 @@ const fetchMovies = async (query) => {
 
 // Display movie results
 const displayMovies = (movies) => {
+  console.log('Movies to display:', movies); // Debugging array of movies
+  
   const html = movies
     .map((movie) => {
-      console.log('Processing movie:', movie.Title, 'Poster URL:', movie.Poster); // Debugging
+      // Debug each movie's properties
+      console.log('Title:', movie.Title, 'Year:', movie.Year, 'Poster:', movie.Poster);
+      
       return `
         <div class="movie">
           <img src="${movie.Poster}" alt="${movie.Title} Poster" />
@@ -37,9 +41,12 @@ const displayMovies = (movies) => {
     })
     .join('');
 
-  console.log('Generated HTML:', html); // Log the generated HTML
+  console.log('Generated HTML:', html); // Debugging generated HTML
   movieResults.innerHTML = html; // Add to DOM
+
+  console.log('Updated movieResults.innerHTML:', movieResults.innerHTML); // Debugging DOM update
 };
+
 
 
 
