@@ -14,13 +14,18 @@ export default {
 	  const allowedOrigin = 'https://foremanalex.com'; 
 	  const origin = request.headers.get('Origin');
   
-	  if (origin !== allowedOrigin) {
-		return new Response('Forbidden', {
-		  status: 403,
-		  headers: { 'Content-Type': 'text/plain' },
-		});
+	 ///if (origin !== allowedOrigin) {
+		///return new Response('Forbidden', {
+		  ///status: 403,
+		  ///headers: { 'Content-Type': 'text/plain' },
+		///});
+	  ///}
+	  const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000'];
+	  if (!allowedOrigins.includes(origin)) {
+		  return new Response('Forbidden', { status: 403 });
 	  }
-  
+	  
+
 	  // Fetch data from the OMDb API
 	  const apiUrl = `https://www.omdbapi.com/?apikey=${apiKey}&s=${query}`;
 	  const apiResponse = await fetch(apiUrl);
