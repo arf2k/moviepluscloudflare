@@ -5,20 +5,13 @@ export default {
 		// Parse the request URL and extract the search query
 		const url = new URL(request.url);
 		const query = url.searchParams.get('s');
+		const origin = request.headers.get('Origin');
+
+		// Allowed origins for CORS
+		const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000'];
 
 		if (!query) {
 			return new Response('Missing search query', { status: 400 });
-		}
-
-		// Validate the Origin header to ensure only requests from allowed origins are permitted
-		const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000'];
-		const origin = request.headers.get('Origin');
-
-		if (!allowedOrigins.includes(origin)) {
-			return new Response('Forbidden', {
-				status: 403,
-				headers: { 'Content-Type': 'text/plain' },
-			});
 		}
 
 		// Handle CORS preflight requests
@@ -26,14 +19,19 @@ export default {
 			return new Response(null, {
 				status: 204,
 				headers: {
-					'Access-Control-Allow-Origin': origin,
+					'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : '',
 					'Access-Control-Allow-Methods': 'GET, OPTIONS',
 					'Access-Control-Allow-Headers': 'Content-Type',
 				},
 			});
 		}
 
-		// Check the cache for a stored response
+		// Check if the request's origin is allowed
+		if (!allowedOrigins.includes(origin)) {
+			return new Response('Forbidden', { status: 403 });
+		}
+
+		// Caching logic
 		const cacheKey = new Request(request.url, request);
 		const cache = caches.default;
 		let response = await cache.match(cacheKey);
@@ -55,23 +53,25 @@ export default {
 			response = new Response(JSON.stringify(data), {
 				headers: {
 					'Content-Type': 'application/json',
-					'Access-Control-Allow-Origin': origin, // Dynamically allow the request origin
+					'Access-Control-Allow-Origin': origin,
 					'Access-Control-Allow-Methods': 'GET, OPTIONS',
 					'Access-Control-Allow-Headers': 'Content-Type',
-					'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+					'Cache-Control': 'public, max-age=3600',
 				},
 			});
 
-			// Store the response in the cache
+			// Cache the response
 			event.waitUntil(cache.put(cacheKey, response.clone()));
 		} else {
 			console.log('Cache hit, returning cached response');
-			// Add CORS headers to the cached response
+			// Re-add CORS headers to the cached response
 			response = new Response(response.body, {
 				...response,
 				headers: {
 					...response.headers,
 					'Access-Control-Allow-Origin': origin,
+					'Access-Control-Allow-Methods': 'GET, OPTIONS',
+					'Access-Control-Allow-Headers': 'Content-Type',
 				},
 			});
 		}
