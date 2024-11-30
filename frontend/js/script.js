@@ -83,3 +83,5 @@ movieSearchInput.addEventListener('input', (e) => {
 });
 
 console.log('Script end');
+
+//test comment 
