@@ -43,7 +43,22 @@ body {
   .favorites-list {
     margin-top: 1rem;
   }
+  .results .movie {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .results .movie img {
+    width: 100px;
+    height: auto;
+    margin-right: 15px;
+    border-radius: 5px;
+  }
+  
+  .results .movie span {
+    font-size: 1.2rem;
+  }
   
 
 
-  

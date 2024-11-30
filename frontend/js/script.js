@@ -24,18 +24,25 @@ const fetchMovies = async (query) => {
 
 // Display movie results
 const displayMovies = (movies) => {
-  movieResults.innerHTML = movies
-    .map(
-      (movie) => `
-      <div class="movie">
-        <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/150'}" alt="${movie.Title} Poster" />
-        <span>${movie.Title} (${movie.Year})</span>
-        <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
-      </div>
-    `
-    )
+  const html = movies
+    .map((movie) => {
+      console.log('Processing movie:', movie.Title, 'Poster URL:', movie.Poster); // Debugging
+      return `
+        <div class="movie">
+          <img src="${movie.Poster}" alt="${movie.Title} Poster" />
+          <span>${movie.Title} (${movie.Year})</span>
+          <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
+        </div>
+      `;
+    })
     .join('');
+
+  console.log('Generated HTML:', html); // Log the generated HTML
+  movieResults.innerHTML = html; // Add to DOM
 };
+
+
+
 
 // Add to favorites
 const addToFavorites = (movieTitle) => {
