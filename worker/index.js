@@ -9,7 +9,7 @@ export default {
 			const origin = request.headers.get('Origin');
 
 			// Allowed origins
-			const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000'];
+			const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000','https://moviepluscloudflare.pages.dev'];
 
 			// Debugging logs
 			console.log('Incoming request:', { url: request.url, origin, query });
