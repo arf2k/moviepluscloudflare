@@ -1,3 +1,4 @@
+import { handleAuthRequest } from './workerAuth';
 import jwt from '@tsndr/cloudflare-worker-jwt';
 
 export default {
@@ -13,9 +14,6 @@ export default {
 
 			// Allowed origins
 			const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000', 'https://moviepluscloudflare.pages.dev'];
-
-			// Debugging logs
-			console.log('Incoming request:', { url: request.url, origin, path, query });
 
 			// Handle CORS preflight requests
 			if (request.method === 'OPTIONS') {
@@ -37,22 +35,9 @@ export default {
 				});
 			}
 
-			// **1️⃣ LOGIN ENDPOINT** 
-			if (path === '/login' && request.method === 'POST') {
-				const body = await request.json();
-				const { username, password } = body;
-
-				// Simple static login validation
-				if (username === 'admin' && password === 'password123') {
-					const token = await jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
-
-					return new Response(JSON.stringify({ token }), {
-						status: 200,
-						headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin },
-					});
-				} else {
-					return new Response('Invalid credentials', { status: 401 });
-				}
+			// Handle Authentication Requests (login/register)
+			if (path.startsWith('/auth')) {
+				return await handleAuthRequest(request, env);
 			}
 
 			// **2️⃣ AUTHENTICATE JWT FOR PROTECTED ENDPOINTS**
