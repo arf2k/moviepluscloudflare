@@ -1,3 +1,4 @@
+// Register
 document.getElementById('register-btn').addEventListener('click', async () => {
      const username = document.getElementById('username').value;
      const password = document.getElementById('password').value;
@@ -12,6 +13,7 @@ document.getElementById('register-btn').addEventListener('click', async () => {
      alert(result.message || result.error);
    });
    
+   // Login
    document.getElementById('login-btn').addEventListener('click', async () => {
      const username = document.getElementById('username').value;
      const password = document.getElementById('password').value;
@@ -29,15 +31,5 @@ document.getElementById('register-btn').addEventListener('click', async () => {
      } else {
        alert(result.error);
      }
-   });
-   
-   document.getElementById('fetch-movies').addEventListener('click', async () => {
-     const token = localStorage.getItem('authToken');
-     const response = await fetch('https://api.foremanalex.com/movies?s=rambo', {
-       headers: { 'Authorization': `Bearer ${token}` },
-     });
-   
-     const result = await response.json();
-     console.log(result);
    });
    
