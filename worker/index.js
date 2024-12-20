@@ -1,6 +1,6 @@
 import jwt from '@tsndr/cloudflare-worker-jwt';
 
-const users = new Map(); // Simple in-memory user storage (this resets on worker restarts)
+const users = new Map(); // Simple in-memory user storage
 
 export default {
   async fetch(request, env) {
@@ -10,80 +10,98 @@ export default {
 
       // Define allowed origins for CORS
       const allowedOrigins = ['https://foremanalex.com', 'https://dev.moviepluscloudflare.pages.dev', 'https://moviepluscloudflare.pages.dev'];
-
       const origin = request.headers.get('Origin');
 
+      // Handle CORS preflight request (OPTIONS request)
       if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          status: 204,
-          headers: {
-            'Access-Control-Allow-Origin': allowedOrigins.includes(origin) ? origin : '',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        });
+        console.log('Handling OPTIONS request for preflight CORS check');
+        return handleCorsPreflight(origin, allowedOrigins);
       }
 
+      // Check if the origin is allowed
       if (!allowedOrigins.includes(origin)) {
+        console.log('Origin not allowed:', origin);
         return new Response('Forbidden', {
           status: 403,
           headers: { 'Content-Type': 'text/plain' },
         });
       }
 
-      // Handle /auth routes
+      // Handle /auth/register endpoint
       if (path === '/auth/register' && request.method === 'POST') {
-        return await registerUser(request);
+        console.log('Handling POST request for /auth/register');
+        return await registerUser(request, origin);
       } 
       else if (path === '/auth/login' && request.method === 'POST') {
-        return await loginUser(request, env);
+        console.log('Handling POST request for /auth/login');
+        return await loginUser(request, env, origin);
       } 
       else if (path === '/auth/verify' && request.method === 'GET') {
-        return await verifyToken(request, env);
+        console.log('Handling GET request for /auth/verify');
+        return await verifyToken(request, env, origin);
       } 
       else {
         return new Response('Not Found', { status: 404 });
       }
     } catch (error) {
       console.error('Worker Error:', error);
-      return new Response('Internal Server Error', { status: 500 });
+      return new Response('Internal Server Error', { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
     }
   },
 };
 
-// 1️⃣ Register User
-async function registerUser(request) {
+async function handleCorsPreflight(origin, allowedOrigins) {
+  if (!allowedOrigins.includes(origin)) {
+    return new Response('Forbidden', {
+      status: 403,
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  }
+
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
+async function registerUser(request, origin) {
   const { username, password } = await request.json();
-  
+
   if (!username || !password) {
     return new Response(JSON.stringify({ error: 'Missing username or password' }), { 
       status: 400, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
     });
   }
 
   if (users.has(username)) {
     return new Response(JSON.stringify({ error: 'User already exists' }), { 
       status: 400, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
     });
   }
 
   users.set(username, password);
   return new Response(JSON.stringify({ message: 'User registered successfully' }), { 
     status: 201, 
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
   });
 }
 
-// 2️⃣ Login User
-async function loginUser(request, env) {
+async function loginUser(request, env, origin) {
   const { username, password } = await request.json();
 
   if (!username || !password) {
     return new Response(JSON.stringify({ error: 'Missing username or password' }), { 
       status: 400, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
     });
   }
 
@@ -91,7 +109,7 @@ async function loginUser(request, env) {
   if (!storedPassword || storedPassword !== password) {
     return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
       status: 401, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
     });
   }
 
@@ -99,12 +117,11 @@ async function loginUser(request, env) {
 
   return new Response(JSON.stringify({ token }), { 
     status: 200, 
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
   });
 }
 
-// 3️⃣ Verify Token
-async function verifyToken(request, env) {
+async function verifyToken(request, env, origin) {
   const authHeader = request.headers.get('Authorization') || '';
   const token = authHeader.replace('Bearer ', '');
 
@@ -112,12 +129,12 @@ async function verifyToken(request, env) {
   if (!isValid) {
     return new Response(JSON.stringify({ error: 'Invalid token' }), { 
       status: 401, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
     });
   }
 
   return new Response(JSON.stringify({ message: 'Token is valid' }), { 
     status: 200, 
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
+    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
   });
 }
