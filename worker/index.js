@@ -23,11 +23,11 @@ export default {
         console.log('Origin not allowed:', origin);
         return new Response('Forbidden', {
           status: 403,
-          headers: { 'Content-Type': 'text/plain' },
+          headers: { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': origin },
         });
       }
 
-      // Handle /auth/register endpoint
+      // Route-based logic
       if (path === '/auth/register' && request.method === 'POST') {
         console.log('Handling POST request for /auth/register');
         return await registerUser(request, origin);
@@ -41,13 +41,16 @@ export default {
         return await verifyToken(request, env, origin);
       } 
       else {
-        return new Response('Not Found', { status: 404 });
+        return new Response('Not Found', { 
+          status: 404, 
+          headers: { 'Access-Control-Allow-Origin': origin, 'Content-Type': 'application/json' } 
+        });
       }
     } catch (error) {
       console.error('Worker Error:', error);
       return new Response('Internal Server Error', { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        status: 500, 
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } 
       });
     }
   },
@@ -57,10 +60,11 @@ async function handleCorsPreflight(origin, allowedOrigins) {
   if (!allowedOrigins.includes(origin)) {
     return new Response('Forbidden', {
       status: 403,
-      headers: { 'Content-Type': 'text/plain' },
+      headers: { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': origin },
     });
   }
 
+  console.log('CORS Preflight: Origin allowed:', origin);
   return new Response(null, {
     status: 204,
     headers: {
