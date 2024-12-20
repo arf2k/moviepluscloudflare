@@ -13,7 +13,7 @@ export default {
 			const origin = request.headers.get('Origin');
 
 			// Allowed origins
-			const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000', 'https://moviepluscloudflare.pages.dev'];
+			const allowedOrigins = ['https://foremanalex.com', 'http://localhost:8000', 'https://moviepluscloudflare.pages.dev', 'https://dev.moviepluscloudflare.pages.dev'];
 
 			// Handle CORS preflight requests
 			if (request.method === 'OPTIONS') {
