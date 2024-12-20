@@ -8,32 +8,33 @@ export default {
     try {
       const url = new URL(request.url);
       const path = url.pathname;
-
       const allowedOrigins = ['https://foremanalex.com', 'https://dev.moviepluscloudflare.pages.dev', 'https://moviepluscloudflare.pages.dev'];
-      const origin = request.headers.get('Origin');
+      const origin = request.headers.get('Origin') || '*';
 
       // Handle CORS preflight request
       if (request.method === 'OPTIONS') {
         return handleCorsPreflight(origin, allowedOrigins);
       }
 
+      // Check if the origin is allowed
       if (!allowedOrigins.includes(origin)) {
         console.log(`Origin not allowed: ${origin}`);
         return new Response('Forbidden', {
           status: 403,
-          headers: { 'Access-Control-Allow-Origin': origin },
+          headers: corsHeaders(origin),
         });
       }
 
-      if (path === '/auth/register' && request.method === 'POST') {
+      // Route-based logic
+      if (path.startsWith('/auth/register') && request.method === 'POST') {
         console.log('Incoming request to /auth/register');
         return await registerUser(request, origin);
       } 
-      else if (path === '/auth/login' && request.method === 'POST') {
+      else if (path.startsWith('/auth/login') && request.method === 'POST') {
         console.log('Incoming request to /auth/login');
         return await loginUser(request, env, origin);
       } 
-      else if (path === '/auth/verify' && request.method === 'GET') {
+      else if (path.startsWith('/auth/verify') && request.method === 'GET') {
         console.log('Incoming request to /auth/verify');
         return await verifyToken(request, env, origin);
       } 
@@ -41,27 +42,20 @@ export default {
         console.log(`No matching route for path: ${path}`);
         return new Response('Not Found', { 
           status: 404, 
-          headers: { 
-            'Access-Control-Allow-Origin': origin, 
-            'Content-Type': 'application/json' 
-          } 
+          headers: corsHeaders(origin),
         });
       }
     } catch (error) {
       console.error('Worker Error:', error);
       return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), { 
         status: 500, 
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Access-Control-Allow-Origin': '*' 
-        } 
+        headers: corsHeaders('*')
       });
     }
   },
 };
 
 async function handleCorsPreflight(origin, allowedOrigins) {
-  console.log('Handling CORS preflight for origin:', origin);
   if (!allowedOrigins.includes(origin)) {
     console.log('CORS Preflight failed for origin:', origin);
     return new Response('Forbidden', { status: 403 });
@@ -69,38 +63,30 @@ async function handleCorsPreflight(origin, allowedOrigins) {
 
   return new Response(null, {
     status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
+    headers: corsHeaders(origin),
   });
 }
 
 async function registerUser(request, origin) {
   const { username, password } = await request.json();
-
   if (!username || !password) {
-    console.log('Missing username or password');
     return new Response(JSON.stringify({ error: 'Missing username or password' }), { 
       status: 400, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+      headers: corsHeaders(origin) 
     });
   }
 
   if (users.has(username)) {
-    console.log(`User already exists: ${username}`);
     return new Response(JSON.stringify({ error: 'User already exists' }), { 
       status: 400, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+      headers: corsHeaders(origin) 
     });
   }
 
   users.set(username, password);
-  console.log(`User registered successfully: ${username}`);
   return new Response(JSON.stringify({ message: 'User registered successfully' }), { 
     status: 201, 
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+    headers: corsHeaders(origin) 
   });
 }
 
@@ -108,27 +94,24 @@ async function loginUser(request, env, origin) {
   const { username, password } = await request.json();
 
   if (!username || !password) {
-    console.log('Missing username or password');
     return new Response(JSON.stringify({ error: 'Missing username or password' }), { 
       status: 400, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+      headers: corsHeaders(origin) 
     });
   }
 
   const storedPassword = users.get(username);
   if (!storedPassword || storedPassword !== password) {
-    console.log('Invalid credentials for user:', username);
     return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
       status: 401, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+      headers: corsHeaders(origin) 
     });
   }
 
   const token = await jwt.sign({ username }, env.JWT_SECRET, { expiresIn: '1h' });
-  console.log(`User ${username} logged in successfully with JWT`);
   return new Response(JSON.stringify({ token }), { 
     status: 200, 
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+    headers: corsHeaders(origin) 
   });
 }
 
@@ -138,16 +121,23 @@ async function verifyToken(request, env, origin) {
 
   const isValid = await jwt.verify(token, env.JWT_SECRET);
   if (!isValid) {
-    console.log('Invalid token');
     return new Response(JSON.stringify({ error: 'Invalid token' }), { 
       status: 401, 
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+      headers: corsHeaders(origin) 
     });
   }
 
-  console.log('Token is valid');
   return new Response(JSON.stringify({ message: 'Token is valid' }), { 
     status: 200, 
-    headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': origin } 
+    headers: corsHeaders(origin) 
   });
+}
+
+function corsHeaders(origin) {
+  return {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
 }
