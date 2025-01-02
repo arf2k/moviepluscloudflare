@@ -19,11 +19,10 @@ registerButton.addEventListener('click', async () => {
   try {
     const response = await fetch(`${baseWorkerUrl}/auth/register`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'Origin': window.location.origin 
       },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
     });
 
     const data = await response.json();
@@ -33,8 +32,8 @@ registerButton.addEventListener('click', async () => {
       alert(data.error || 'Error registering user');
     }
   } catch (error) {
-    alert('Registration failed');
     console.error('Registration Error:', error);
+    alert('Registration failed. Check console for details.');
   }
 });
 
@@ -51,22 +50,21 @@ loginButton.addEventListener('click', async () => {
   try {
     const response = await fetch(`${baseWorkerUrl}/auth/login`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
-        'Origin': window.location.origin 
       },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username, password }),
     });
 
     const data = await response.json();
     if (response.ok) {
-      alert('Login successful');
       localStorage.setItem('authToken', data.token);
+      alert('Login successful!');
     } else {
       alert(data.error || 'Login failed');
     }
   } catch (error) {
-    alert('Login failed');
     console.error('Login Error:', error);
+    alert('Login failed. Check console for details.');
   }
 });
