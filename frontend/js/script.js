@@ -13,8 +13,7 @@ let token = localStorage.getItem('authToken');
 
 // Check if token exists and update UI accordingly
 if (token) {
-  loginSection.style.display = 'none';
-  appSection.style.display = 'block';
+  verifyToken(token);
 } else {
   loginSection.style.display = 'block';
   appSection.style.display = 'none';
@@ -32,6 +31,11 @@ logoutButton.addEventListener('click', () => {
 
 // Fetch movies via the Cloudflare Worker
 const fetchMovies = async (query) => {
+  if (!token) {
+    alert('You need to log in to search for movies.');
+    return;
+  }
+
   try {
     const response = await fetch(`${baseWorkerUrl}/api/search?s=${query}`, {
       headers: {
@@ -49,6 +53,35 @@ const fetchMovies = async (query) => {
   } catch (error) {
     console.error('Error fetching movies:', error);
     movieResults.innerHTML = '<p>Error fetching movies. Please try again later.</p>';
+  }
+};
+
+// Verify JWT
+const verifyToken = async (token) => {
+  try {
+    const response = await fetch(`${baseWorkerUrl}/verify`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      appSection.style.display = 'block';
+      loginSection.style.display = 'none';
+      console.log('Token verified successfully');
+    } else {
+      localStorage.removeItem('authToken');
+      appSection.style.display = 'none';
+      loginSection.style.display = 'block';
+      console.error('Token verification failed:', data.error);
+    }
+  } catch (err) {
+    console.error('Error verifying token:', err);
+    loginSection.style.display = 'block';
+    appSection.style.display = 'none';
   }
 };
 

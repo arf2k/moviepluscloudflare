@@ -17,19 +17,21 @@ registerButton.addEventListener('click', async () => {
   }
 
   try {
-    const response = await fetch(`${baseWorkerUrl}/auth/register`, {
+    const response = await fetch(`${baseWorkerUrl}/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': 'https://foremanalex.com'
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password })
     });
 
     const data = await response.json();
+
     if (response.ok) {
       alert('User registered successfully');
     } else {
-      alert(data.error || 'Error registering user');
+      alert(data.error || 'Registration failed');
     }
   } catch (error) {
     console.error('Registration Error:', error);
@@ -48,18 +50,21 @@ loginButton.addEventListener('click', async () => {
   }
 
   try {
-    const response = await fetch(`${baseWorkerUrl}/auth/login`, {
+    const response = await fetch(`${baseWorkerUrl}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': 'https://foremanalex.com'
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password })
     });
 
     const data = await response.json();
+
     if (response.ok) {
       localStorage.setItem('authToken', data.token);
-      alert('Login successful!');
+      alert('Login successful');
+      window.location.reload(); // Reload to update UI
     } else {
       alert(data.error || 'Login failed');
     }

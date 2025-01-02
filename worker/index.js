@@ -33,11 +33,20 @@ export default {
         response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         return response;
       } else {
-        return new Response('Forbidden', { status: 403 });
+        return new Response('Forbidden', { 
+          status: 403, 
+          headers: { 'Content-Type': 'text/plain' } 
+        });
       }
     } catch (err) {
       console.error('Fetch error:', err);
-      return new Response('Internal Server Error', { status: 500 });
+      return new Response('Internal Server Error', { 
+        status: 500, 
+        headers: { 
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': origin 
+        } 
+      });
     }
   },
 };
@@ -50,7 +59,10 @@ async function handleRequest(request, env, origin) {
     if (path === '/') {
       return new Response('Welcome to MoviePlus Cloudflare Worker!', {
         status: 200,
-        headers: { 'Content-Type': 'text/plain' },
+        headers: { 
+          'Content-Type': 'text/plain',
+          'Access-Control-Allow-Origin': origin 
+        },
       });
     }
 
@@ -119,6 +131,24 @@ async function handleRequest(request, env, origin) {
       const authHeader = request.headers.get('Authorization') || '';
       const token = authHeader.replace('Bearer ', '');
 
+      // Log the token for debugging
+      console.log('Token:', token);
+
+      // Check if the token has three parts
+      if (token.split('.').length !== 3) {
+        console.error('Invalid token format');
+        return new Response(
+          JSON.stringify({ error: 'Invalid token format' }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
       const isValid = await jwt.verify(token, env.JWT_SECRET);
       if (!isValid) {
         return new Response(
@@ -142,9 +172,21 @@ async function handleRequest(request, env, origin) {
       });
     }
 
-    return new Response('Not Found', { status: 404 });
+    return new Response('Not Found', { 
+      status: 404,
+      headers: { 
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin': origin 
+      },
+    });
   } catch (err) {
     console.error('Handle request error:', err);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response('Internal Server Error', { 
+      status: 500,
+      headers: { 
+        'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin': origin 
+      },
+    });
   }
 }
