@@ -128,6 +128,49 @@ async function handleRequest(request, env, origin) {
       });
     }
 
+    if (path === '/verify' && request.method === 'GET') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '');
+
+      if (!token || token.split('.').length !== 3) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid token format' }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      const isValid = await jwt.verify(token, env.JWT_SECRET);
+      if (!isValid) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid token' }),
+          {
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ message: 'Token is valid' }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': origin,
+          },
+        }
+      );
+    }
+
     if (path === '/kv-test' && request.method === 'GET') {
       const authHeader = request.headers.get('Authorization') || '';
       const token = authHeader.replace('Bearer ', '');
