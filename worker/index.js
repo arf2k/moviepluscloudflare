@@ -6,6 +6,12 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
+      console.log("Incoming request:", {
+        method: request.method,
+        url: request.url,
+        origin: request.headers.get('Origin'),
+      });
+
       const allowedOrigins = [
         'https://foremanalex.com',
         'https://dev.moviepluscloudflare.pages.dev',
@@ -14,11 +20,8 @@ export default {
 
       const origin = request.headers.get('Origin');
 
-      console.log(`Incoming request: ${request.method} ${path} from ${origin}`);
-
       // Handle preflight (OPTIONS) requests
       if (request.method === 'OPTIONS') {
-        console.log('Handling preflight request');
         return handlePreflight(request, origin, allowedOrigins);
       }
 
@@ -34,7 +37,7 @@ export default {
         response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         return response;
       } else {
-        console.log('Request does not match /api/* route');
+        console.log("Path not found:", path);
         return new Response('Not Found', {
           status: 404,
           headers: {
@@ -57,7 +60,7 @@ export default {
 };
 
 function handlePreflight(request, origin, allowedOrigins) {
-  console.log(`Preflight request from origin: ${origin}`);
+  console.log("Handling preflight request for origin:", origin);
   if (origin && allowedOrigins.includes(origin)) {
     return new Response(null, {
       status: 204,
@@ -68,6 +71,7 @@ function handlePreflight(request, origin, allowedOrigins) {
       },
     });
   } else {
+    console.warn("Preflight request from disallowed origin:", origin);
     return new Response('Forbidden', { status: 403 });
   }
 }
@@ -77,15 +81,15 @@ async function handleAPIRequest(request, env, origin) {
     const url = new URL(request.url);
     const path = url.pathname.replace('/api', '');
 
-    console.log(`Handling API request for path: ${path}`);
+    console.log("Handling API request for path:", path);
 
     if (path === '/register' && request.method === 'POST') {
-      console.log('Processing registration request');
       const { username, password } = await request.json();
+      console.log("Registering user:", username);
 
       const userExists = await env.USERS_KV.get(username);
       if (userExists) {
-        console.log('User already exists');
+        console.warn("User already exists:", username);
         return new Response(
           JSON.stringify({ error: 'User already exists' }),
           {
@@ -96,7 +100,7 @@ async function handleAPIRequest(request, env, origin) {
       }
 
       await env.USERS_KV.put(username, password);
-      console.log('User registered successfully');
+      console.log("User registered successfully:", username);
       return new Response(
         JSON.stringify({ message: 'User registered successfully' }),
         {
@@ -107,12 +111,12 @@ async function handleAPIRequest(request, env, origin) {
     }
 
     if (path === '/login' && request.method === 'POST') {
-      console.log('Processing login request');
       const { username, password } = await request.json();
+      console.log("Attempting login for user:", username);
 
       const storedPassword = await env.USERS_KV.get(username);
       if (!storedPassword || storedPassword !== password) {
-        console.log('Invalid credentials');
+        console.warn("Invalid login credentials for user:", username);
         return new Response(
           JSON.stringify({ error: 'Invalid credentials' }),
           {
@@ -126,7 +130,7 @@ async function handleAPIRequest(request, env, origin) {
         expiresIn: '1h',
       });
 
-      console.log('Login successful, token generated');
+      console.log("Login successful for user:", username);
       return new Response(JSON.stringify({ token }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -134,12 +138,13 @@ async function handleAPIRequest(request, env, origin) {
     }
 
     if (path === '/verify' && request.method === 'GET') {
-      console.log('Processing token verification');
       const authHeader = request.headers.get('Authorization') || '';
       const token = authHeader.replace('Bearer ', '');
 
+      console.log("Verifying token:", token);
+
       if (!token || token.split('.').length !== 3) {
-        console.log('Invalid token format');
+        console.warn("Invalid token format:", token);
         return new Response(
           JSON.stringify({ error: 'Invalid token format' }),
           {
@@ -151,7 +156,7 @@ async function handleAPIRequest(request, env, origin) {
 
       const isValid = await jwt.verify(token, env.JWT_SECRET);
       if (!isValid) {
-        console.log('Invalid token');
+        console.warn("Invalid token:", token);
         return new Response(
           JSON.stringify({ error: 'Invalid token' }),
           {
@@ -161,7 +166,7 @@ async function handleAPIRequest(request, env, origin) {
         );
       }
 
-      console.log('Token is valid');
+      console.log("Token is valid:", token);
       return new Response(
         JSON.stringify({ message: 'Token is valid' }),
         {
@@ -172,13 +177,14 @@ async function handleAPIRequest(request, env, origin) {
     }
 
     if (path === '/search' && request.method === 'GET') {
-      console.log('Processing movie search request');
       const authHeader = request.headers.get('Authorization') || '';
       const token = authHeader.replace('Bearer ', '');
 
+      console.log("Searching with token:", token);
+
       const isValid = await jwt.verify(token, env.JWT_SECRET);
       if (!isValid) {
-        console.log('Invalid token');
+        console.warn("Invalid token during search:", token);
         return new Response(
           JSON.stringify({ error: 'Invalid token' }),
           {
@@ -190,7 +196,7 @@ async function handleAPIRequest(request, env, origin) {
 
       const query = url.searchParams.get('s');
       if (!query) {
-        console.log('Query parameter missing');
+        console.warn("Missing search query parameter.");
         return new Response(
           JSON.stringify({ error: 'Query parameter "s" is required' }),
           {
@@ -200,13 +206,14 @@ async function handleAPIRequest(request, env, origin) {
         );
       }
 
+      console.log("Performing search for query:", query);
       const apiResponse = await fetch(
         `https://www.omdbapi.com/?apikey=${env.OMDB_API_KEY}&s=${encodeURIComponent(query)}`
       );
       const apiData = await apiResponse.json();
 
       if (apiResponse.ok && apiData.Response === "True") {
-        console.log('Search results retrieved successfully');
+        console.log("Search successful for query:", query);
         return new Response(
           JSON.stringify({ Search: apiData.Search }),
           {
@@ -215,7 +222,7 @@ async function handleAPIRequest(request, env, origin) {
           }
         );
       } else {
-        console.log('Error retrieving search results');
+        console.error("Search failed for query:", query, apiData.Error);
         return new Response(
           JSON.stringify({ error: apiData.Error || 'Unable to fetch results' }),
           {
@@ -226,7 +233,7 @@ async function handleAPIRequest(request, env, origin) {
       }
     }
 
-    console.log('API path not found');
+    console.warn("API path not found:", path);
     return new Response('Not Found', {
       status: 404,
       headers: { 'Content-Type': 'text/plain' },
