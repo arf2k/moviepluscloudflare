@@ -26,26 +26,15 @@ export default {
       }
 
       // Proceed with API logic
-      if (path.startsWith('/api/')) {
-        const response = await handleAPIRequest(request, env, origin);
-        if (origin && allowedOrigins.includes(origin)) {
-          response.headers.set('Access-Control-Allow-Origin', origin);
-        } else {
-          response.headers.set('Access-Control-Allow-Origin', '*');
-        }
-        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        return response;
+      const response = await handleAPIRequest(request, env, path);
+      if (origin && allowedOrigins.includes(origin)) {
+        response.headers.set('Access-Control-Allow-Origin', origin);
       } else {
-        console.log("Path not found:", path);
-        return new Response('Not Found', {
-          status: 404,
-          headers: {
-            'Content-Type': 'text/plain',
-            'Access-Control-Allow-Origin': origin || '*',
-          },
-        });
+        response.headers.set('Access-Control-Allow-Origin', '*');
       }
+      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      return response;
     } catch (err) {
       console.error('Fetch error:', err);
       return new Response('Internal Server Error', {
@@ -76,11 +65,8 @@ function handlePreflight(request, origin, allowedOrigins) {
   }
 }
 
-async function handleAPIRequest(request, env, origin) {
+async function handleAPIRequest(request, env, path) {
   try {
-    const url = new URL(request.url);
-    const path = url.pathname.replace('/api', '');
-
     console.log("Handling API request for path:", path);
 
     if (path === '/register' && request.method === 'POST') {
@@ -194,7 +180,7 @@ async function handleAPIRequest(request, env, origin) {
         );
       }
 
-      const query = url.searchParams.get('s');
+      const query = new URL(request.url).searchParams.get('s');
       if (!query) {
         console.warn("Missing search query parameter.");
         return new Response(
