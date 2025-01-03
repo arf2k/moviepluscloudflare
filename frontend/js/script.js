@@ -1,139 +1,97 @@
 const baseWorkerUrl = 'https://api.foremanalex.com';
+
+const registerButton = document.getElementById('register-btn');
+const loginButton = document.getElementById('login-btn');
 const movieSearchInput = document.getElementById('movie-search');
 const movieResults = document.getElementById('movie-results');
 const favoritesList = document.getElementById('favorites-list');
-const logoutButton = document.getElementById('logout-button');
-const loginSection = document.getElementById('login-section');
-const appSection = document.getElementById('app-section');
+const loginSection = document.getElementById('auth-section');
+const appSection = document.querySelector('.container');
 
+let token = localStorage.getItem('authToken');
 let favorites = [];
 
-// Retrieve JWT from localStorage
-let token = localStorage.getItem('authToken');
+const toggleUI = (isLoggedIn) => {
+  loginSection.style.display = isLoggedIn ? 'none' : 'block';
+  appSection.style.display = isLoggedIn ? 'block' : 'none';
+};
 
-// Check if token exists and update UI accordingly
-if (token) {
-  verifyToken(token);
-} else {
-  loginSection.style.display = 'block';
-  appSection.style.display = 'none';
-}
+const handleAuth = async (endpoint, body) => {
+  try {
+    const response = await fetch(`${baseWorkerUrl}/${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return response.json();
+  } catch (error) {
+    console.error(`Error during ${endpoint}:`, error);
+    alert('Authentication failed. Please try again.');
+  }
+};
 
-// Logout Functionality
-logoutButton.addEventListener('click', () => {
-  localStorage.removeItem('authToken');
-  token = null;
+registerButton.addEventListener('click', async () => {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  if (!username || !password) {
+    return alert('Both fields are required.');
+  }
 
-  loginSection.style.display = 'block';
-  appSection.style.display = 'none';
-  alert('You have logged out.');
+  const data = await handleAuth('register', { username, password });
+  if (data.message) alert('User registered successfully.');
+  else alert(data.error || 'Registration failed.');
 });
 
-// Fetch movies via the Cloudflare Worker
+loginButton.addEventListener('click', async () => {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  if (!username || !password) {
+    return alert('Both fields are required.');
+  }
+
+  const data = await handleAuth('login', { username, password });
+  if (data.token) {
+    localStorage.setItem('authToken', data.token);
+    token = data.token;
+    toggleUI(true);
+  } else {
+    alert(data.error || 'Login failed.');
+  }
+});
+
 const fetchMovies = async (query) => {
   if (!token) {
-    alert('You need to log in to search for movies.');
-    return;
+    return alert('You must log in to search for movies.');
   }
 
   try {
     const response = await fetch(`${baseWorkerUrl}/api/search?s=${query}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
-
     const data = await response.json();
-
-    if (response.ok && data.Search) {
-      displayMovies(data.Search);
-    } else {
-      movieResults.innerHTML = '<p>No movies found.</p>';
-    }
+    if (data.Search) displayMovies(data.Search);
+    else movieResults.innerHTML = '<p>No results found.</p>';
   } catch (error) {
     console.error('Error fetching movies:', error);
-    movieResults.innerHTML = '<p>Error fetching movies. Please try again later.</p>';
+    movieResults.innerHTML = '<p>Error occurred. Try again later.</p>';
   }
 };
 
-// Verify JWT
-const verifyToken = async (token) => {
-  try {
-    const response = await fetch(`${baseWorkerUrl}/verify`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      appSection.style.display = 'block';
-      loginSection.style.display = 'none';
-      console.log('Token verified successfully');
-    } else {
-      localStorage.removeItem('authToken');
-      appSection.style.display = 'none';
-      loginSection.style.display = 'block';
-      console.error('Token verification failed:', data.error);
-    }
-  } catch (err) {
-    console.error('Error verifying token:', err);
-    loginSection.style.display = 'block';
-    appSection.style.display = 'none';
-  }
-};
-
-// Display movie results
-const displayMovies = (movies) => {
-  movieResults.innerHTML = movies
-    .map((movie) => `
-      <div class="movie">
-        <img src="${movie.Poster !== 'N/A' ? movie.Poster : 'https://via.placeholder.com/150'}" alt="${movie.Title} Poster" />
-        <span>${movie.Title} (${movie.Year})</span>
-        <button onclick="addToFavorites('${movie.Title}')">Add to Favorites</button>
-      </div>
-    `)
-    .join('');
-};
-
-// Add to favorites
-const addToFavorites = (movieTitle) => {
-  if (!favorites.includes(movieTitle)) {
-    favorites.push(movieTitle);
-    updateFavoritesList();
-  }
-};
-
-// Remove from favorites
-const removeFromFavorites = (movieTitle) => {
-  favorites = favorites.filter((title) => title !== movieTitle);
-  updateFavoritesList();
-};
-
-// Update favorites list
-const updateFavoritesList = () => {
-  favoritesList.innerHTML = favorites
-    .map((title) => `
-      <div class="movie">
-        <span>${title}</span>
-        <button onclick="removeFromFavorites('${title}')">Remove</button>
-      </div>
-    `)
-    .join('');
-};
-
-// Event listener for search input
 movieSearchInput.addEventListener('input', (e) => {
   const query = e.target.value.trim();
-  if (query.length > 2) {
-    fetchMovies(query);
-  } else {
-    movieResults.innerHTML = '';
-  }
+  if (query.length > 2) fetchMovies(query);
+  else movieResults.innerHTML = '';
 });
 
+const displayMovies = (movies) => {
+  movieResults.innerHTML = movies
+    .map(
+      (movie) =>
+        `<div class="movie"><img src="${movie.Poster}" alt="${movie.Title} Poster"><span>${movie.Title} (${movie.Year})</span></div>`
+    )
+    .join('');
+};
+
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM fully loaded. Ready to execute scripts.');
+  toggleUI(!!token);
 });
