@@ -1,4 +1,5 @@
 import jwt from '@tsndr/cloudflare-worker-jwt';
+import { getAssetFromKV } from '@cloudflare/kv-asset-handler';
 
 export default {
   async fetch(request, env) {
@@ -25,11 +26,17 @@ export default {
           });
         }
 
-        const response = await handleRequest(request, env, origin);
-        response.headers.set('Access-Control-Allow-Origin', origin);
-        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        return response;
+        if (path.startsWith('/api')) {
+          const response = await handleRequest(request, env, origin);
+          response.headers.set('Access-Control-Allow-Origin', origin);
+          response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+          response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+          return response;
+        } else {
+          return await getAssetFromKV(request, env, {
+            cacheControl: { bypassCache: true },
+          });
+        }
       } else {
         return new Response('Forbidden', {
           status: 403,
@@ -53,16 +60,6 @@ async function handleRequest(request, env, origin) {
   try {
     const url = new URL(request.url);
     const path = url.pathname;
-
-    if (path === '/') {
-      return new Response('Welcome to MoviePlus Cloudflare Worker!', {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/plain',
-          'Access-Control-Allow-Origin': origin,
-        },
-      });
-    }
 
     if (path === '/register' && request.method === 'POST') {
       const { username, password } = await request.json();
@@ -216,22 +213,35 @@ async function handleRequest(request, env, origin) {
         );
       }
 
-      // Mock search results
-      const searchResults = [
-        { Title: 'Rambo', Year: '1982', imdbID: 'tt0083944', Type: 'movie' },
-        { Title: 'Terminator', Year: '1984', imdbID: 'tt0088247', Type: 'movie' },
-      ];
-
-      return new Response(
-        JSON.stringify({ Search: searchResults }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': origin,
-          },
-        }
+      // Live API call for search results
+      const apiResponse = await fetch(
+        `https://www.omdbapi.com/?apikey=${env.OMDB_API_KEY}&s=${encodeURIComponent(query)}`
       );
+      const apiData = await apiResponse.json();
+
+      if (apiResponse.ok && apiData.Response === "True") {
+        return new Response(
+          JSON.stringify({ Search: apiData.Search }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      } else {
+        return new Response(
+          JSON.stringify({ error: apiData.Error || 'Unable to fetch results' }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
     }
 
     if (path === '/kv-test' && request.method === 'GET') {
