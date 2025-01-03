@@ -13,21 +13,20 @@ export default {
       ];
       const origin = request.headers.get('Origin');
 
-      // Allow requests without an Origin header
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (allowedOrigins.includes(origin)) {
         if (request.method === 'OPTIONS') {
           return new Response(null, {
             status: 204,
             headers: {
-              'Access-Control-Allow-Origin': origin || '*',
+              'Access-Control-Allow-Origin': origin,
               'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
               'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             },
           });
         }
 
-        const response = await handleRequest(request, env, origin || '*');
-        response.headers.set('Access-Control-Allow-Origin', origin || '*');
+        const response = await handleRequest(request, env, origin);
+        response.headers.set('Access-Control-Allow-Origin', origin);
         response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         return response;
@@ -50,8 +49,6 @@ export default {
   },
 };
 
-
-
 async function handleRequest(request, env, origin) {
   try {
     const url = new URL(request.url);
@@ -65,6 +62,38 @@ async function handleRequest(request, env, origin) {
           'Access-Control-Allow-Origin': origin,
         },
       });
+    }
+
+    if (path === '/register' && request.method === 'POST') {
+      const { username, password } = await request.json();
+
+      // Check if the user already exists
+      const userExists = await env.USERS_KV.get(username);
+      if (userExists) {
+        return new Response(
+          JSON.stringify({ error: 'User already exists' }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      // Store the new user in KV
+      await env.USERS_KV.put(username, password);
+      return new Response(
+        JSON.stringify({ message: 'User registered successfully' }),
+        {
+          status: 201,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': origin,
+          },
+        }
+      );
     }
 
     if (path === '/kv-test' && request.method === 'GET') {
@@ -108,8 +137,6 @@ async function handleRequest(request, env, origin) {
         return new Response('KV Test Failed', { status: 500 });
       }
     }
-
-    // Other logic follows here (register, login, verify, etc.)
 
     return new Response('Not Found', {
       status: 404,
