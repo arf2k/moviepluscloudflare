@@ -6,31 +6,36 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
-      // const allowedOrigins = [
-      //   'https://foremanalex.com',
-      //   'https://dev.moviepluscloudflare.pages.dev',
-      //   'https://moviepluscloudflare.pages.dev',
-      // ];
-      // const origin = request.headers.get('Origin');
+      const allowedOrigins = [
+        'https://foremanalex.com',
+        'https://dev.moviepluscloudflare.pages.dev',
+        'https://moviepluscloudflare.pages.dev',
+      ];
+      const origin = request.headers.get('Origin');
 
-      // Temporarily allow all origins for debugging
-      if (request.method === 'OPTIONS') {
-        return new Response(null, {
-          status: 204,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
+      if (allowedOrigins.includes(origin)) {
+        if (request.method === 'OPTIONS') {
+          return new Response(null, {
+            status: 204,
+            headers: {
+              'Access-Control-Allow-Origin': origin,
+              'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            },
+          });
+        }
+
+        const response = await handleRequest(request, env, origin);
+        response.headers.set('Access-Control-Allow-Origin', origin);
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        return response;
+      } else {
+        return new Response('Forbidden', {
+          status: 403,
+          headers: { 'Content-Type': 'text/plain' },
         });
       }
-
-      // Skip origin checks temporarily for debugging
-      const response = await handleRequest(request, env, '*');
-      response.headers.set('Access-Control-Allow-Origin', '*');
-      response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      return response;
     } catch (err) {
       console.error('Fetch error:', err);
       return new Response('Internal Server Error', {
