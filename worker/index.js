@@ -171,6 +171,69 @@ async function handleRequest(request, env, origin) {
       );
     }
 
+    if (path === '/api/search' && request.method === 'GET') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '');
+
+      if (!token || token.split('.').length !== 3) {
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized access. Token required.' }),
+          {
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      const isValid = await jwt.verify(token, env.JWT_SECRET);
+      if (!isValid) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid token' }),
+          {
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      const query = url.searchParams.get('s');
+      if (!query) {
+        return new Response(
+          JSON.stringify({ error: 'Query parameter "s" is required' }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      // Mock search results
+      const searchResults = [
+        { Title: 'Rambo', Year: '1982', imdbID: 'tt0083944', Type: 'movie' },
+        { Title: 'Terminator', Year: '1984', imdbID: 'tt0088247', Type: 'movie' },
+      ];
+
+      return new Response(
+        JSON.stringify({ Search: searchResults }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': origin,
+          },
+        }
+      );
+    }
+
     if (path === '/kv-test' && request.method === 'GET') {
       const authHeader = request.headers.get('Authorization') || '';
       const token = authHeader.replace('Bearer ', '');
