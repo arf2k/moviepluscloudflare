@@ -96,6 +96,38 @@ async function handleRequest(request, env, origin) {
       );
     }
 
+    if (path === '/login' && request.method === 'POST') {
+      const { username, password } = await request.json();
+
+      // Retrieve the stored password for the user
+      const storedPassword = await env.USERS_KV.get(username);
+      if (!storedPassword || storedPassword !== password) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid credentials' }),
+          {
+            status: 401,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': origin,
+            },
+          }
+        );
+      }
+
+      // Generate a JWT token
+      const token = await jwt.sign({ username }, env.JWT_SECRET, {
+        expiresIn: '1h',
+      });
+
+      return new Response(JSON.stringify({ token }), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': origin,
+        },
+      });
+    }
+
     if (path === '/kv-test' && request.method === 'GET') {
       const authHeader = request.headers.get('Authorization') || '';
       const token = authHeader.replace('Bearer ', '');
