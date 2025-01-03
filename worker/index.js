@@ -13,29 +13,25 @@ export default {
       ];
       const origin = request.headers.get('Origin');
 
-      // Log the incoming Origin and Path for debugging
-      console.log('Origin:', origin);
-      console.log('Path:', path);
-
-      if (allowedOrigins.includes(origin)) {
+      // Allow requests without an Origin header
+      if (!origin || allowedOrigins.includes(origin)) {
         if (request.method === 'OPTIONS') {
           return new Response(null, {
             status: 204,
             headers: {
-              'Access-Control-Allow-Origin': origin,
+              'Access-Control-Allow-Origin': origin || '*',
               'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
               'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             },
           });
         }
 
-        const response = await handleRequest(request, env, origin);
-        response.headers.set('Access-Control-Allow-Origin', origin);
+        const response = await handleRequest(request, env, origin || '*');
+        response.headers.set('Access-Control-Allow-Origin', origin || '*');
         response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
         response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         return response;
       } else {
-        console.log('Forbidden Origin:', origin);
         return new Response('Forbidden', {
           status: 403,
           headers: { 'Content-Type': 'text/plain' },
@@ -53,6 +49,7 @@ export default {
     }
   },
 };
+
 
 
 async function handleRequest(request, env, origin) {
