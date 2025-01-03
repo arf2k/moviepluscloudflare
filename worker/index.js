@@ -65,6 +65,30 @@ async function handleRequest(request, env, origin) {
     }
 
     if (path === '/kv-test' && request.method === 'GET') {
+      const authHeader = request.headers.get('Authorization') || '';
+      const token = authHeader.replace('Bearer ', '');
+
+      if (!token || token.split('.').length !== 3) {
+        return new Response('Unauthorized', {
+          status: 401,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': origin,
+          },
+        });
+      }
+
+      const isValid = await jwt.verify(token, env.JWT_SECRET);
+      if (!isValid) {
+        return new Response('Invalid token', {
+          status: 401,
+          headers: {
+            'Content-Type': 'text/plain',
+            'Access-Control-Allow-Origin': origin,
+          },
+        });
+      }
+
       try {
         // Test writing to KV
         await env.USERS_KV.put('test_key', 'test_value');
