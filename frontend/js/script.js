@@ -65,7 +65,7 @@ const fetchMovies = async (query) => {
   }
 
   try {
-    const response = await fetch(`${baseWorkerUrl}/api/search?s=${query}`, {
+    const response = await fetch(`${baseWorkerUrl}/search?s=${query}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();

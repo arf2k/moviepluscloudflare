@@ -1,4 +1,5 @@
-import jwt from '@tsndr/cloudflare-worker-jwt';
+import { handleAuth } from './routes/auth.js';
+import { handleSearch } from './routes/searchMovies.js';
 
 export default {
   async fetch(request, env) {
@@ -12,28 +13,49 @@ export default {
         origin: request.headers.get('Origin'),
       });
 
+      // Manage allowed origins for CORS
       const allowedOrigins = [
         'https://foremanalex.com',
         'https://dev.moviepluscloudflare.pages.dev',
         'https://moviepluscloudflare.pages.dev',
       ];
-
       const origin = request.headers.get('Origin');
 
-      // Handle preflight (OPTIONS) requests
+      // Handle OPTIONS (preflight) requests
       if (request.method === 'OPTIONS') {
         return handlePreflight(request, origin, allowedOrigins);
       }
 
-      // Proceed with API logic
-      const response = await handleAPIRequest(request, env, path);
+      // Proceed with routing
+      let response;
+
+      // AUTH routes (/register, /login, /verify)
+      if (path === '/register' || path === '/login' || path === '/verify') {
+        response = await handleAuth(request, env, path);
+      }
+      // SEARCH route
+      else if (path === '/search') {
+        response = await handleSearch(request, env, path);
+      }
+      // Add more routes here, e.g. favorites
+      else {
+        console.warn("API path not found:", path);
+        response = new Response('Not Found', {
+          status: 404,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
+
+      // Set CORS headers on the final response
       if (origin && allowedOrigins.includes(origin)) {
         response.headers.set('Access-Control-Allow-Origin', origin);
       } else {
+        // or set '*', depending on your preference
         response.headers.set('Access-Control-Allow-Origin', '*');
       }
       response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
       return response;
     } catch (err) {
       console.error('Fetch error:', err);
@@ -48,6 +70,7 @@ export default {
   },
 };
 
+// Handle preflight
 function handlePreflight(request, origin, allowedOrigins) {
   console.log("Handling preflight request for origin:", origin);
   if (origin && allowedOrigins.includes(origin)) {
@@ -62,173 +85,5 @@ function handlePreflight(request, origin, allowedOrigins) {
   } else {
     console.warn("Preflight request from disallowed origin:", origin);
     return new Response('Forbidden', { status: 403 });
-  }
-}
-
-async function handleAPIRequest(request, env, path) {
-  try {
-    console.log("Handling API request for path:", path);
-
-    if (path === '/register' && request.method === 'POST') {
-      const { username, password } = await request.json();
-      console.log("Registering user:", username);
-
-      const userExists = await env.USERS_KV.get(username);
-      if (userExists) {
-        console.warn("User already exists:", username);
-        return new Response(
-          JSON.stringify({ error: 'User already exists' }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      await env.USERS_KV.put(username, password);
-      console.log("User registered successfully:", username);
-      return new Response(
-        JSON.stringify({ message: 'User registered successfully' }),
-        {
-          status: 201,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    if (path === '/login' && request.method === 'POST') {
-      const { username, password } = await request.json();
-      console.log("Attempting login for user:", username);
-
-      const storedPassword = await env.USERS_KV.get(username);
-      if (!storedPassword || storedPassword !== password) {
-        console.warn("Invalid login credentials for user:", username);
-        return new Response(
-          JSON.stringify({ error: 'Invalid credentials' }),
-          {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      const token = await jwt.sign({ username }, env.JWT_SECRET, {
-        expiresIn: '1h',
-      });
-
-      console.log("Login successful for user:", username);
-      return new Response(JSON.stringify({ token }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (path === '/verify' && request.method === 'GET') {
-      const authHeader = request.headers.get('Authorization') || '';
-      const token = authHeader.replace('Bearer ', '');
-
-      console.log("Verifying token:", token);
-
-      if (!token || token.split('.').length !== 3) {
-        console.warn("Invalid token format:", token);
-        return new Response(
-          JSON.stringify({ error: 'Invalid token format' }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      const isValid = await jwt.verify(token, env.JWT_SECRET);
-      if (!isValid) {
-        console.warn("Invalid token:", token);
-        return new Response(
-          JSON.stringify({ error: 'Invalid token' }),
-          {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      console.log("Token is valid:", token);
-      return new Response(
-        JSON.stringify({ message: 'Token is valid' }),
-        {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    if (path === '/search' && request.method === 'GET') {
-      const authHeader = request.headers.get('Authorization') || '';
-      const token = authHeader.replace('Bearer ', '');
-
-      console.log("Searching with token:", token);
-
-      const isValid = await jwt.verify(token, env.JWT_SECRET);
-      if (!isValid) {
-        console.warn("Invalid token during search:", token);
-        return new Response(
-          JSON.stringify({ error: 'Invalid token' }),
-          {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      const query = new URL(request.url).searchParams.get('s');
-      if (!query) {
-        console.warn("Missing search query parameter.");
-        return new Response(
-          JSON.stringify({ error: 'Query parameter "s" is required' }),
-          {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-
-      console.log("Performing search for query:", query);
-      const apiResponse = await fetch(
-        `https://www.omdbapi.com/?apikey=${env.OMDB_API_KEY}&s=${encodeURIComponent(query)}`
-      );
-      const apiData = await apiResponse.json();
-
-      if (apiResponse.ok && apiData.Response === "True") {
-        console.log("Search successful for query:", query);
-        return new Response(
-          JSON.stringify({ Search: apiData.Search }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      } else {
-        console.error("Search failed for query:", query, apiData.Error);
-        return new Response(
-          JSON.stringify({ error: apiData.Error || 'Unable to fetch results' }),
-          {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-      }
-    }
-
-    console.warn("API path not found:", path);
-    return new Response('Not Found', {
-      status: 404,
-      headers: { 'Content-Type': 'text/plain' },
-    });
-  } catch (err) {
-    console.error('API request error:', err);
-    return new Response('Internal Server Error', {
-      status: 500,
-      headers: { 'Content-Type': 'text/plain' },
-    });
   }
 }
