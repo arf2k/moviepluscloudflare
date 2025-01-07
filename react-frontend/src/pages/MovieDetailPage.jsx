@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
-export default function MovieDetailPage({ token, isLoggedIn }) {
+export default function MovieDetailPage({ token }) {
   const { imdbID } = useParams();
-  const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      // e.g., navigate('/login');
-      // or do something else
-    }
-  }, [isLoggedIn, navigate]);
-
-  useEffect(() => {
-    // Example: calling your Worker’s /movie endpoint
     fetch(`${baseWorkerUrl}/movie?id=${imdbID}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -30,7 +21,7 @@ export default function MovieDetailPage({ token, isLoggedIn }) {
         }
       })
       .catch((err) => {
-        console.error('Error fetching movie details:', err);
+        console.error('Movie detail fetch error:', err);
         setError('Could not fetch movie details.');
       });
   }, [imdbID, token]);
@@ -48,7 +39,6 @@ export default function MovieDetailPage({ token, isLoggedIn }) {
       <p>Director: {movie.Director}</p>
       <p>IMDB Rating: {movie.imdbRating}</p>
       <p>Plot: {movie.Plot}</p>
-      {/* More fields as desired */}
     </div>
   );
 }

@@ -1,43 +1,58 @@
+// src/App.jsx
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
-import AuthForm from './components/AuthForm';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProtectedRoute from './ProtectedRoute';
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken') || '');
   const [isLoggedIn, setIsLoggedIn] = useState(!!token);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // If token changes, update isLoggedIn
     setIsLoggedIn(!!token);
   }, [token]);
 
   const handleLoginSuccess = (newToken) => {
     setToken(newToken);
     localStorage.setItem('authToken', newToken);
-    navigate('/'); // Navigate to home page after login
+  };
+
+  const handleLogout = () => {
+    setToken('');
+    localStorage.removeItem('authToken');
   };
 
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={<HomePage token={token} isLoggedIn={isLoggedIn} />} 
-      />
-      <Route 
-        path="/login" 
+      {/* Protected routes */}
+      <Route
+        path="/"
         element={
-          <AuthForm 
-            onLoginSuccess={handleLoginSuccess} 
-          />
-        } 
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <HomePage token={token} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
       />
-      <Route 
-        path="/movie/:imdbID" 
-        element={<MovieDetailPage token={token} isLoggedIn={isLoggedIn} />} 
+      <Route
+        path="/movie/:imdbID"
+        element={
+          <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <MovieDetailPage token={token} />
+          </ProtectedRoute>
+        }
       />
+
+      {/* Public routes */}
+      <Route
+        path="/login"
+        element={
+          <LoginPage onLoginSuccess={handleLoginSuccess} />
+        }
+      />
+      <Route path="/register" element={<RegisterPage />} />
     </Routes>
   );
 }
