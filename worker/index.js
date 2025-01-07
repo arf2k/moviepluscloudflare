@@ -1,5 +1,6 @@
 import { handleAuth } from './routes/auth.js';
 import { handleSearch } from './routes/searchMovies.js';
+import { handleMovieDetail } from './routes/movieDetail.js';
 
 export default {
   async fetch(request, env) {
@@ -36,6 +37,10 @@ export default {
       // SEARCH route
       else if (path === '/search') {
         response = await handleSearch(request, env, path);
+      }
+      // MOVIE DETAIL route
+      else if (path === '/movie') {
+        response = await handleMovieDetail(request, env);
       }
       // Add more routes here, e.g. favorites
       else {
