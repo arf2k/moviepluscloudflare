@@ -4,8 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ProtectedRoute from './ProtectedRoute';
+import RegistrationPage from './pages/RegistrationPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('authToken') || '');
@@ -52,7 +52,7 @@ export default function App() {
           <LoginPage onLoginSuccess={handleLoginSuccess} />
         }
       />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register" element={<RegistrationPage />} />
     </Routes>
   );
 }
