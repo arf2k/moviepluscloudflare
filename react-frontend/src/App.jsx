@@ -1,35 +1,43 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import MovieDetailPage from './pages/MovieDetailPage';
+import AuthForm from './components/AuthForm';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [token, setToken] = useState(localStorage.getItem('authToken') || '');
+  const [isLoggedIn, setIsLoggedIn] = useState(!!token);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If token changes, update isLoggedIn
+    setIsLoggedIn(!!token);
+  }, [token]);
+
+  const handleLoginSuccess = (newToken) => {
+    setToken(newToken);
+    localStorage.setItem('authToken', newToken);
+    navigate('/'); // Navigate to home page after login
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Routes>
+      <Route 
+        path="/" 
+        element={<HomePage token={token} isLoggedIn={isLoggedIn} />} 
+      />
+      <Route 
+        path="/login" 
+        element={
+          <AuthForm 
+            onLoginSuccess={handleLoginSuccess} 
+          />
+        } 
+      />
+      <Route 
+        path="/movie/:imdbID" 
+        element={<MovieDetailPage token={token} isLoggedIn={isLoggedIn} />} 
+      />
+    </Routes>
+  );
 }
-
-export default App
