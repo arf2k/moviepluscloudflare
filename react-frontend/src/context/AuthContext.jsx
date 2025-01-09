@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    console.log('Token updated in AuthContext:', token);
+    console.log('Token updated in context:', token);
   }, [token]);
 
   return (
