@@ -19,6 +19,7 @@ export default function MovieDetailPage({ token }) {
           setError(data.error);
         } else {
           setMovie(data);
+          console.log(data)
         }
       })
       .catch((err) => {
