@@ -11,39 +11,47 @@ export default function LoginForm({ onLoginSuccess }) {
   const navigate = useNavigate();
 
   async function handleLogin(e) {
-    e.preventDefault(); // Prevent form reload if this is inside a <form>
+    e.preventDefault(); // Ensure no reload from form submission
     setError('');
-    setLoading(true); // Indicate loading state
+    setLoading(true);
+    console.log('Attempting login with:', { username, password });
+  
     if (!username || !password) {
       setLoading(false);
       return setError('Both fields are required.');
     }
-
+  
     try {
       const response = await fetch(`${baseWorkerUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-
+  
       const data = await response.json();
-
+      console.log('Login response data:', data);
+  
       if (!response.ok) {
         throw new Error(data?.error || 'Login failed.');
       }
-
-      if (data.token) {
-        onLoginSuccess(data.token); // Update app state
+  
+      if (data?.token) {
+        console.log('Login successful, setting token:', data.token);
+        onLoginSuccess(data.token); // Update the app state
         navigate('/'); // Redirect to home
+      } else {
+        console.warn('Login response missing token:', data);
+        setError('Unexpected response. Please try again.');
       }
     } catch (err) {
       console.error('Error during login:', err);
       setError(err.message || 'Login failed, please try again.');
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
+      console.log('Login attempt completed, loading reset.');
     }
   }
-
+  
   return (
     <div>
       <form onSubmit={handleLogin}>
