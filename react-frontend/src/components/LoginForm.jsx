@@ -1,12 +1,12 @@
-// src/components/LoginForm.jsx
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
 export default function LoginForm({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   async function handleLogin() {
@@ -19,16 +19,18 @@ export default function LoginForm({ onLoginSuccess }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      const data = await response.json();
+      const text = await response.text();
+      console.log('Response text:', text);
+      const data = JSON.parse(text);
       if (data?.token) {
         onLoginSuccess(data.token);
-        navigate('/'); // redirect to home
+        navigate('/'); 
       } else {
-        alert(data?.error || 'Login failed.');
+        setError(data?.error || 'Login failed.');
       }
     } catch (err) {
       console.error('Error during login:', err);
-      alert('Login failed, please try again.');
+      setError('Login failed, please try again.');
     }
   }
 
@@ -50,6 +52,7 @@ export default function LoginForm({ onLoginSuccess }) {
         />
       </div>
       <button onClick={handleLogin}>Login</button>
+      {error && <p>{error}</p>}
     </div>
   );
 }

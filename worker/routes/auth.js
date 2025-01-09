@@ -22,7 +22,7 @@ export async function handleAuth(request, env, path) {
         );
       }
 
-      // Store password (note: consider hashing in a real app)
+      // update with hashing in later iterations
       await env.USERS_KV.put(username, password);
       console.log("User registered successfully:", username);
 
