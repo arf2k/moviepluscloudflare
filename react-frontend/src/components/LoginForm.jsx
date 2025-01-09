@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
-export default function LoginForm({ onLoginSuccess }) {
+export default function LoginForm() {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
