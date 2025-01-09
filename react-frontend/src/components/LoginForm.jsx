@@ -1,9 +1,3 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-
-const baseWorkerUrl = import.meta.env.VITE_API_URL;
-
 export default function LoginForm() {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
@@ -16,6 +10,7 @@ export default function LoginForm() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    console.log('Attempting login with:', { username, password });
 
     if (!username || !password) {
       setLoading(false);
@@ -30,12 +25,14 @@ export default function LoginForm() {
       });
 
       const data = await response.json();
+      console.log('Login response:', data);
 
       if (!response.ok) {
         throw new Error(data?.error || 'Login failed.');
       }
 
       if (data?.token) {
+        console.log('Login successful, calling login context method');
         login(data.token); // Update global auth state
         navigate('/'); // Redirect to home page
       } else {
