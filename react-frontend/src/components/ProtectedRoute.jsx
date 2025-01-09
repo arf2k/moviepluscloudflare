@@ -4,10 +4,13 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ProtectedRoute({ children }) {
   const { isLoggedIn } = useAuth();
+  console.log('ProtectedRoute check:', { isLoggedIn });
 
   if (!isLoggedIn) {
+    console.log('Redirecting to /login');
     return <Navigate to="/login" replace />;
   }
 
+  console.log('Access granted to protected route');
   return children;
 }

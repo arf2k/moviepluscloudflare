@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import LoginPage from './pages/LoginPage';
-import RegistrationPage from './pages/RegistrationPage';
+import RegistrationPage from './pages/RegisterPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -31,9 +31,7 @@ export default function App() {
         <Route path="/register" element={<RegistrationPage />} />
         <Route
           path="*"
-          element={
-            <Navigate to={useAuth().isLoggedIn ? '/' : '/login'} replace />
-          }
+          element={<Navigate to="/login" replace />}
         />
       </Routes>
     </AuthProvider>
