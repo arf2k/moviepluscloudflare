@@ -37,9 +37,22 @@ export default function MovieDetailPage({ token }) {
             <img src={movie.Poster} alt={`${movie.Title} Poster`} />
             <p>Released: {movie.Released}</p>
             <p>Runtime: {movie.Runtime}</p>
+            <p>Language: {movie.Language}</p>
+            <p>Country: {movie.Country}</p>
+            <p>BoxOffice: {movie.BoxOffice}</p>
+            <p>Production: {movie.Production}</p>
+            <p>Writer: {movie.Writer}</p>
+            <p>Year: {movie.Year}</p>
+            <p>Rated: {movie.Rated}</p>
+            <p>Metascore: {movie.Metascore}</p>
+            <p>imdbVotes: {movie.imdbVotes}</p>
+      
             <p>Genre: {movie.Genre}</p>
             <p>Director: {movie.Director}</p>
+            <p>Actors: {movie.Actors} </p>
+            <p>Awards: {movie.Awards} </p>          
             <p>IMDB Rating: {movie.imdbRating}</p>
+            <p></p>
             <p>Plot: {movie.Plot}</p>
        </div>
        <div>
