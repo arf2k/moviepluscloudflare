@@ -14,6 +14,7 @@ export default function MovieSearch({ token }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
+      console.log(data)
       setResults(data.Search || []);
     } catch (error) {
       console.error('Error fetching movies:', error);
