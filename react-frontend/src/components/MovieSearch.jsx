@@ -1,10 +1,11 @@
-// src/components/MovieSearch.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
-export default function MovieSearch({ token }) {
+export default function MovieSearch() {
+  const { token } = useAuth();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
 

@@ -1,9 +1,12 @@
+// src/pages/MovieDetailPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
-export default function MovieDetailPage({ token }) {
+
+export default function MovieDetailPage() {
+  const { token } = useAuth();
   const navigate = useNavigate();
   const { imdbID } = useParams();
   const [movie, setMovie] = useState(null);
@@ -19,7 +22,6 @@ export default function MovieDetailPage({ token }) {
           setError(data.error);
         } else {
           setMovie(data);
-          console.log(data)
         }
       })
       .catch((err) => {
@@ -32,32 +34,28 @@ export default function MovieDetailPage({ token }) {
   if (!movie) return <p>Loading...</p>;
 
   return (
-    <><div className="movie-detail-page">
-            <h1>{movie.Title}</h1>
-            <img src={movie.Poster} alt={`${movie.Title} Poster`} />
-            <p>Released: {movie.Released}</p>
-            <p>Runtime: {movie.Runtime}</p>
-            <p>Language: {movie.Language}</p>
-            <p>Country: {movie.Country}</p>
-            <p>BoxOffice: {movie.BoxOffice}</p>
-            <p>Production: {movie.Production}</p>
-            <p>Writer: {movie.Writer}</p>
-            <p>Year: {movie.Year}</p>
-            <p>Rated: {movie.Rated}</p>
-            <p>Metascore: {movie.Metascore}</p>
-            <p>imdbVotes: {movie.imdbVotes}</p>
-      
-            <p>Genre: {movie.Genre}</p>
-            <p>Director: {movie.Director}</p>
-            <p>Actors: {movie.Actors} </p>
-            <p>Awards: {movie.Awards} </p>          
-            <p>IMDB Rating: {movie.imdbRating}</p>
-            <p></p>
-            <p>Plot: {movie.Plot}</p>
-       </div>
-       <div>
-       <button onClick={() => navigate(-1)}>Back</button>
-       </div>
-    </>
+    <div className="movie-detail-page">
+ <h1>{movie.Title}</h1>
+        <img src={movie.Poster} alt={`${movie.Title} Poster`} />
+        <p>Released: {movie.Released}</p>
+        <p>Runtime: {movie.Runtime}</p>
+        <p>Language: {movie.Language}</p>
+        <p>Country: {movie.Country}</p>
+        <p>BoxOffice: {movie.BoxOffice}</p>
+        <p>Production: {movie.Production}</p>
+        <p>Writer: {movie.Writer}</p>
+        <p>Year: {movie.Year}</p>
+        <p>Rated: {movie.Rated}</p>
+        <p>Metascore: {movie.Metascore}</p>
+        <p>imdbVotes: {movie.imdbVotes}</p>
+        <p>Genre: {movie.Genre}</p>
+        <p>Director: {movie.Director}</p>
+        <p>Actors: {movie.Actors} </p>
+        <p>Awards: {movie.Awards} </p>
+        <p>IMDB Rating: {movie.imdbRating}</p>
+        <p></p>
+        <p>Plot: {movie.Plot}</p>
+      <button onClick={() => navigate(-1)}>Back</button>
+    </div>
   );
 }
