@@ -1,4 +1,10 @@
-export default function LoginForm() {
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const baseWorkerUrl = import.meta.env.VITE_API_URL;
+
+export default function LoginForm({ onLoginSuccess }) {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
