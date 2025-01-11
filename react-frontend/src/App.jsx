@@ -6,6 +6,7 @@ import MovieDetailPage from './pages/MovieDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import RecommendationsPage from './components/RecommendationsPage';
 
 export default function App() {
   return (
@@ -24,6 +25,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <MovieDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recommendations/:movieID"
+          element={
+            <ProtectedRoute>
+              <RecommendationsPage />
             </ProtectedRoute>
           }
         />

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; 
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
 export default function MovieDetailPage() {
   const navigate = useNavigate();
   const { movieID } = useParams();
-  const { token } = useAuth(); // Use token from AuthContext
+  const { token } = useAuth();
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState('');
 
@@ -64,6 +64,9 @@ export default function MovieDetailPage() {
       </div>
       <div>
         <button onClick={() => navigate(-1)}>Back</button>
+        <Link to={`/recommendations/${movieID}`}>
+          <button>View Recommendations</button>
+        </Link>
       </div>
     </>
   );
