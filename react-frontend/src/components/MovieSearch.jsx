@@ -17,7 +17,7 @@ export default function MovieSearch() {
       const data = await response.json();
 
       if (data.results) {
-        setResults(data.results); // TMDb returns results in a "results" array
+        setResults(data.results); 
       } else {
         setResults([]);
         console.error('No results found:', data.error || 'Unknown error');
