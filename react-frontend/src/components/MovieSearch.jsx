@@ -13,16 +13,16 @@ export default function MovieSearch() {
     const searchUrl = `${baseWorkerUrl}/search?query=${encodeURIComponent(searchTerm)}`;
     console.log('Search URL:', searchUrl);
     console.log('Authorization Token:', token);
-
+  
     try {
       const response = await fetch(searchUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
       console.log('Response Status:', response.status);
-
+  
       const data = await response.json();
       console.log('Response Data:', data);
-
+  
       if (response.ok && data.results) {
         setResults(data.results);
       } else {
@@ -32,7 +32,7 @@ export default function MovieSearch() {
     } catch (error) {
       console.error('Error fetching movies:', error);
     }
-  }
+  }  
 
   function handleInputChange(e) {
     const val = e.target.value.trim();
