@@ -69,31 +69,33 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
   };
 
   const removeFavorite = async (movieId) => {
-    if (!token) {
-      console.error('Cannot remove favorite. Token is missing.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`${baseWorkerUrl}/favorites`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ movieId }),
-      });
-
-      if (response.ok) {
-        setFavorites((prev) => prev.filter((movie) => movie.movieId !== movieId));
-      } else {
-        const error = await response.json();
-        console.error('Error removing favorite:', error);
-      }
-    } catch (err) {
-      console.error('Failed to remove favorite:', err);
-    }
-  };
+     if (!token) {
+       console.error('Cannot remove favorite. Token is missing.');
+       return;
+     }
+   
+     try {
+       const response = await fetch(`${baseWorkerUrl}/favorites`, {
+         method: 'DELETE',
+         headers: {
+           Authorization: `Bearer ${token}`,
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({ movieId }),
+       });
+   
+       if (response.ok) {
+         setFavorites((prev) => prev.filter((movie) => movie.movieId !== movieId));
+         console.log(`Favorite with movieId ${movieId} removed successfully.`);
+       } else {
+         const error = await response.json();
+         console.error('Error removing favorite:', error);
+       }
+     } catch (err) {
+       console.error('Failed to remove favorite:', err);
+     }
+   };
+   
 
   return (
     <FavoritesContext.Provider value={{ favorites, addFavorite, removeFavorite }}>
