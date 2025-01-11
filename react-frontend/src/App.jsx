@@ -20,7 +20,7 @@ export default function App() {
           }
         />
         <Route
-          path="/movie/:imdbID"
+        path="/movie/:movieID"
           element={
             <ProtectedRoute>
               <MovieDetailPage />

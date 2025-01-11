@@ -5,14 +5,19 @@ const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
 export default function MovieDetailPage({ token }) {
   const navigate = useNavigate();
-  const { movieID } = useParams(); 
+  const { movieID } = useParams();
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (!movieID) {
+      setError('Movie ID is missing.');
+      return;
+    }
+
     async function fetchMovieDetails() {
       try {
-        const response = await fetch(`${baseWorkerUrl}/movie?id=${movieID}`, {
+        const response = await fetch(`${baseWorkerUrl}/movie?id=${encodeURIComponent(movieID)}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
