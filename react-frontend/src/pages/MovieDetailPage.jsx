@@ -41,7 +41,7 @@ export default function MovieDetailPage() {
     fetchMovieDetails();
   }, [movieID, token]);
 
-  const isFavorite = favorites.some((fav) => fav.id === parseInt(movieID, 10));
+  const isFavorite = favorites.some((fav) => fav.movieId === parseInt(movieID, 10));
 
   if (error) return <p>{error}</p>;
   if (!movie) return <p>Loading...</p>;
@@ -66,14 +66,14 @@ export default function MovieDetailPage() {
         </p>
         <p>Plot: {movie.overview || 'N/A'}</p>
         {isFavorite ? (
-          <button onClick={() => removeFavorite(movie.id)}>Remove from Favorites</button>
+          <button onClick={() => removeFavorite(movie.movieId)}>Remove from Favorites</button>
         ) : (
           <button
             onClick={() =>
               addFavorite({
                 id: movie.id,
                 title: movie.title,
-                posterPath: movie.poster_path,
+                poster_path: movie.poster_path, // Use `poster_path` here
               })
             }
           >
