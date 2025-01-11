@@ -2,7 +2,7 @@ import { handleAuth } from './routes/auth.js';
 import { handleSearch } from './routes/searchMovies.js';
 import { handleMovieDetail } from './routes/movieDetail.js';
 import { handleRecommendations } from './routes/recommendations.js';
-import { handleFavorites } from './routes/favorites.js';
+import { handleFavorites, handlePreflight } from './routes/favorites.js';
 
 export default {
   async fetch(request, env) {

@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useFavorites } from '../context/FavoritesContext';
+import React from "react";
+import { Link } from "react-router-dom";
+import { useFavorites } from "../context/FavoritesContext";
 
 export default function FavoritesPage() {
   const { favorites, removeFavorite } = useFavorites();
@@ -21,7 +21,9 @@ export default function FavoritesPage() {
                 <div className="placeholder">No Image Available</div>
               )}
               <Link to={`/movie/${movie.movieId}`}>{movie.title}</Link>
-              <button onClick={() => removeFavorite(movie.movieId)}>Remove</button>
+              <button onClick={() => removeFavorite(movie.movieId)}>
+                Remove
+              </button>
             </div>
           ))}
         </div>

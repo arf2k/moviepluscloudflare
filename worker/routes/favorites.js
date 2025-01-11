@@ -43,13 +43,16 @@ export async function handleFavorites(request, env) {
       favorites.push({ movieId, title, posterPath });
       await env.FAVORITES_KV.put(username, JSON.stringify(favorites));
 
-      return new Response(
-        JSON.stringify({ message: 'Movie added to favorites' }),
-        {
-          status: 201,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+console.log('Payload received in POST request:', { movieId, title, posterPath });
+console.log('Favorites before update:', favorites);
+
+return new Response(
+  JSON.stringify({ message: 'Movie added to favorites' }),
+  {
+    status: 201,
+    headers: { 'Content-Type': 'application/json' },
+  }
+);
     } catch (error) {
       console.error('Error adding to favorites:', error);
       return new Response('Internal Server Error', { status: 500 });
@@ -101,19 +104,19 @@ export async function handleFavorites(request, env) {
 }
 
 // Add this to handle CORS properly:
-function handlePreflight(request, allowedOrigins) {
-  const origin = request.headers.get('Origin');
-
-  if (origin && allowedOrigins.includes(origin)) {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
-  }
-
-  return new Response('Forbidden', { status: 403 });
-}
+export default function handlePreflight(request, allowedOrigins) {
+     const origin = request.headers.get('Origin');
+   
+     if (origin && allowedOrigins.includes(origin)) {
+       return new Response(null, {
+         status: 204,
+         headers: {
+           'Access-Control-Allow-Origin': origin,
+           'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+         },
+       });
+     }
+   
+     return new Response('Forbidden', { status: 403 });
+   }
