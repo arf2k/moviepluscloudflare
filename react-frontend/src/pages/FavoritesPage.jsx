@@ -11,7 +11,7 @@ export default function FavoritesPage() {
       {favorites.length > 0 ? (
         <div>
           {favorites.map((movie) => (
-            <div key={movie.id} className="favorite-movie">
+            <div key={movie.movieId} className="favorite-movie">
               {movie.posterPath ? (
                 <img
                   src={`https://image.tmdb.org/t/p/w200${movie.posterPath}`}
@@ -20,8 +20,8 @@ export default function FavoritesPage() {
               ) : (
                 <div className="placeholder">No Image Available</div>
               )}
-              <Link to={`/movie/${movie.id}`}>{movie.title}</Link>
-              <button onClick={() => removeFavorite(movie.id)}>Remove</button>
+              <Link to={`/movie/${movie.movieId}`}>{movie.title}</Link>
+              <button onClick={() => removeFavorite(movie.movieId)}>Remove</button>
             </div>
           ))}
         </div>

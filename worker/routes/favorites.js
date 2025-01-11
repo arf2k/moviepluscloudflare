@@ -23,11 +23,11 @@ export async function handleFavorites(request, env) {
 
   if (method === 'POST') {
     try {
-      const { movieId} = await request.json();
+      const { movieId, title, posterPath } = await request.json();
 
-      if (!movieId) {
+      if (!movieId || !title || !posterPath) {
         return new Response(
-          JSON.stringify({ error: 'Missing movie id' }),
+          JSON.stringify({ error: 'Missing required fields' }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -40,7 +40,7 @@ export async function handleFavorites(request, env) {
         );
       }
 
-      favorites.push({ movieId});
+      favorites.push({ movieId, title, posterPath });
       await env.FAVORITES_KV.put(username, JSON.stringify(favorites));
 
       return new Response(
@@ -98,4 +98,22 @@ export async function handleFavorites(request, env) {
     status: 404,
     headers: { 'Content-Type': 'text/plain' },
   });
+}
+
+// Add this to handle CORS properly:
+function handlePreflight(request, allowedOrigins) {
+  const origin = request.headers.get('Origin');
+
+  if (origin && allowedOrigins.includes(origin)) {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  }
+
+  return new Response('Forbidden', { status: 403 });
 }
