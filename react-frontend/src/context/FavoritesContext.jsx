@@ -4,10 +4,9 @@ import { useAuth } from './AuthContext';
 const FavoritesContext = createContext();
 
 export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
-  const { token } = useAuth(); // Access the token directly from AuthContext
+  const { token } = useAuth(); 
   const [favorites, setFavorites] = useState([]);
 
-  // Fetch favorites on load
   useEffect(() => {
     async function fetchFavorites() {
       if (!token) {
@@ -48,8 +47,6 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
          },
          body: JSON.stringify({
            movieId: movie.id,
-           title: movie.title,
-           posterPath: movie.poster_path,
          }),
        });
    

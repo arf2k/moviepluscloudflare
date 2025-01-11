@@ -23,11 +23,11 @@ export async function handleFavorites(request, env) {
 
   if (method === 'POST') {
     try {
-      const { movieId, title, posterPath } = await request.json();
+      const { movieId} = await request.json();
 
-      if (!movieId || !title || !posterPath) {
+      if (!movieId) {
         return new Response(
-          JSON.stringify({ error: 'Missing required fields' }),
+          JSON.stringify({ error: 'Missing movie id' }),
           { status: 400, headers: { 'Content-Type': 'application/json' } }
         );
       }
@@ -40,7 +40,7 @@ export async function handleFavorites(request, env) {
         );
       }
 
-      favorites.push({ movieId, title, posterPath });
+      favorites.push({ movieId});
       await env.FAVORITES_KV.put(username, JSON.stringify(favorites));
 
       return new Response(
