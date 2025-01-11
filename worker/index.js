@@ -1,6 +1,7 @@
 import { handleAuth } from './routes/auth.js';
 import { handleSearch } from './routes/searchMovies.js';
 import { handleMovieDetail } from './routes/movieDetail.js';
+import { handleRecommendations } from './routes/recommendations.js';
 
 export default {
   async fetch(request, env) {
@@ -42,7 +43,11 @@ export default {
       else if (path === '/movie') {
         response = await handleMovieDetail(request, env);
       }
-      // Add more routes here, e.g. favorites
+
+
+   else if (path === '/recommendations') {
+      return handleRecommendations(request, env);
+    }
       else {
         console.warn("API path not found:", path);
         response = new Response('Not Found', {
