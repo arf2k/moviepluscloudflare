@@ -67,6 +67,9 @@ export default function MovieDetailPage() {
         <Link to={`/recommendations/${movieID}`}>
           <button>View Recommendations</button>
         </Link>
+        <Link to="/">
+        <button>Back to Search</button>
+      </Link>
       </div>
     </>
   );

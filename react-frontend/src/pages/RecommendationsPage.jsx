@@ -53,9 +53,12 @@ export default function RecommendationsPage() {
               <div className="placeholder">No Image Available</div>
             )}
             <Link to={`/movie/${movie.id}`}>
-              {movie.title} ({movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'})
-            </Link>
-          </div>
+          {movie.title} ({movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'})
+        </Link>
+        <Link to="/">
+        <button>Back to Search</button>
+      </Link>
+      </div>
         ))}
       </div>
     </>
