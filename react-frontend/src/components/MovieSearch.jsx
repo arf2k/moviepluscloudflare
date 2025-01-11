@@ -11,11 +11,17 @@ export default function MovieSearch() {
 
   async function fetchMovies(searchTerm) {
     try {
-      const response = await fetch(`${baseWorkerUrl}/search?s=${searchTerm}`, {
+      const response = await fetch(`${baseWorkerUrl}/search?s=${encodeURIComponent(searchTerm)}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-      setResults(data.Search || []);
+
+      if (data.results) {
+        setResults(data.results); // TMDb returns results in a "results" array
+      } else {
+        setResults([]);
+        console.error('No results found:', data.error || 'Unknown error');
+      }
     } catch (error) {
       console.error('Error fetching movies:', error);
     }
@@ -43,10 +49,10 @@ export default function MovieSearch() {
         <div>
           {results.length > 0 ? (
             results.map((movie) => (
-              <div key={movie.imdbID} className="movie">
-                <img src={movie.Poster} alt={`${movie.Title} Poster`} />
-                <Link to={`/movie/${movie.imdbID}`}>
-                  {movie.Title} ({movie.Year})
+              <div key={movie.id} className="movie">
+                <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={`${movie.title} Poster`} />
+                <Link to={`/movie/${movie.id}`}>
+                  {movie.title} ({new Date(movie.release_date).getFullYear() || 'N/A'})
                 </Link>
               </div>
             ))
