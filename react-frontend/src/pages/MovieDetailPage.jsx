@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useFavorites } from '../context/FavoritesContext';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
@@ -8,6 +9,7 @@ export default function MovieDetailPage() {
   const navigate = useNavigate();
   const { movieID } = useParams();
   const { token } = useAuth();
+  const { favorites, addFavorite, removeFavorite } = useFavorites();
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState('');
 
@@ -39,6 +41,8 @@ export default function MovieDetailPage() {
     fetchMovieDetails();
   }, [movieID, token]);
 
+  const isFavorite = favorites.some((fav) => fav.id === parseInt(movieID, 10));
+
   if (error) return <p>{error}</p>;
   if (!movie) return <p>Loading...</p>;
 
@@ -61,15 +65,24 @@ export default function MovieDetailPage() {
           Genres: {movie.genres ? movie.genres.map((g) => g.name).join(', ') : 'N/A'}
         </p>
         <p>Plot: {movie.overview || 'N/A'}</p>
+        {isFavorite ? (
+          <button onClick={() => removeFavorite(movie.id)}>Remove from Favorites</button>
+        ) : (
+          <button
+            onClick={() =>
+              addFavorite({
+                id: movie.id,
+                title: movie.title,
+                posterPath: movie.poster_path,
+              })
+            }
+          >
+            Add to Favorites
+          </button>
+        )}
       </div>
       <div>
         <button onClick={() => navigate(-1)}>Back</button>
-        <Link to={`/recommendations/${movieID}`}>
-          <button>View Recommendations</button>
-        </Link>
-        <Link to="/">
-        <button>Back to Search</button>
-      </Link>
       </div>
     </>
   );
