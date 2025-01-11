@@ -93,6 +93,10 @@ export default function MovieDetailPage() {
         ) : (
           <button
             onClick={() =>
+              console.log('Adding favorite with data:', {
+                id: movie.id,
+                title: movie.title,
+                poster_path: movie.poster_path,
               addFavorite({
                 movieId: movie.id,
                 title: movie.title,
