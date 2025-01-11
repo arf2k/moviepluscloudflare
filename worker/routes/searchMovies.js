@@ -11,7 +11,7 @@ export async function handleSearch(request, env, path) {
 
       console.log("Searching with token:", token);
 
-      // Verify token
+      // Verify JWT
       const isValid = await jwt.verify(token, env.JWT_SECRET);
       if (!isValid) {
         console.warn("Invalid token during search:", token);
@@ -24,13 +24,13 @@ export async function handleSearch(request, env, path) {
         );
       }
 
-      // Extract query param "s"
+      // Extract query param "query"
       const url = new URL(request.url);
-      const query = url.searchParams.get('s');
+      const query = url.searchParams.get('query');
       if (!query) {
         console.warn("Missing search query parameter.");
         return new Response(
-          JSON.stringify({ error: 'Query parameter "s" is required' }),
+          JSON.stringify({ error: 'Query parameter "query" is required' }),
           {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
@@ -42,7 +42,13 @@ export async function handleSearch(request, env, path) {
 
       // Fetch from TMDb
       const apiResponse = await fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=${env.TMDB_API_KEY}&query=${encodeURIComponent(query)}`
+        `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${env.TMDB_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        }
       );
       const apiData = await apiResponse.json();
 
