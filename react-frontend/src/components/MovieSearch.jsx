@@ -10,14 +10,21 @@ export default function MovieSearch() {
   const [results, setResults] = useState([]);
 
   async function fetchMovies(searchTerm) {
+    const searchUrl = `${baseWorkerUrl}/search?query=${encodeURIComponent(searchTerm)}`;
+    console.log('Search URL:', searchUrl);
+    console.log('Authorization Token:', token);
+
     try {
-      const response = await fetch(`${baseWorkerUrl}/search?s=${encodeURIComponent(searchTerm)}`, {
+      const response = await fetch(searchUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
+      console.log('Response Status:', response.status);
 
-      if (data.results) {
-        setResults(data.results); 
+      const data = await response.json();
+      console.log('Response Data:', data);
+
+      if (response.ok && data.results) {
+        setResults(data.results);
       } else {
         setResults([]);
         console.error('No results found:', data.error || 'Unknown error');
@@ -50,9 +57,13 @@ export default function MovieSearch() {
           {results.length > 0 ? (
             results.map((movie) => (
               <div key={movie.id} className="movie">
-                <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={`${movie.title} Poster`} />
+                {movie.poster_path ? (
+                  <img src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`} alt={`${movie.title} Poster`} />
+                ) : (
+                  <div className="placeholder">No Image Available</div>
+                )}
                 <Link to={`/movie/${movie.id}`}>
-                  {movie.title} ({new Date(movie.release_date).getFullYear() || 'N/A'})
+                  {movie.title} ({movie.release_date ? new Date(movie.release_date).getFullYear() : 'N/A'})
                 </Link>
               </div>
             ))
