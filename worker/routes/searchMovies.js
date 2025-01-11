@@ -40,25 +40,25 @@ export async function handleSearch(request, env, path) {
 
       console.log("Performing search for query:", query);
 
-      // Fetch from OMDB
+      // Fetch from TMDb
       const apiResponse = await fetch(
-        `https://www.omdbapi.com/?apikey=${env.OMDB_API_KEY}&s=${encodeURIComponent(query)}`
+        `https://api.themoviedb.org/3/search/movie?api_key=${env.TMDB_API_KEY}&query=${encodeURIComponent(query)}`
       );
       const apiData = await apiResponse.json();
 
-      if (apiResponse.ok && apiData.Response === "True") {
+      if (apiResponse.ok) {
         console.log("Search successful for query:", query);
         return new Response(
-          JSON.stringify({ Search: apiData.Search }),
+          JSON.stringify({ results: apiData.results }),
           {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
           }
         );
       } else {
-        console.error("Search failed for query:", query, apiData.Error);
+        console.error("Search failed for query:", query, apiData.status_message);
         return new Response(
-          JSON.stringify({ error: apiData.Error || 'Unable to fetch results' }),
+          JSON.stringify({ error: apiData.status_message || 'Unable to fetch results' }),
           {
             status: 500,
             headers: { 'Content-Type': 'application/json' },

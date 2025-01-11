@@ -21,22 +21,22 @@ export async function handleMovieDetail(request, env) {
     );
   }
 
-  // Fetch movie details from OMDB by ID
-  const omdbResponse = await fetch(
-    `https://www.omdbapi.com/?apikey=${env.OMDB_API_KEY}&i=${encodeURIComponent(id)}`
+  // Fetch movie details from TMDb by ID
+  const tmdbResponse = await fetch(
+    `https://api.themoviedb.org/3/movie/${encodeURIComponent(id)}?api_key=${env.TMDB_API_KEY}`
   );
-  const omdbData = await omdbResponse.json();
+  const tmdbData = await tmdbResponse.json();
 
-  if (omdbResponse.ok && omdbData.Response === 'True') {
-    // Return the full omdbData (Title, Plot, etc.)
-    return new Response(JSON.stringify(omdbData), {
+  if (tmdbResponse.ok) {
+    // Return the full tmdbData (Title, Plot, etc.)
+    return new Response(JSON.stringify(tmdbData), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
   } else {
     return new Response(
       JSON.stringify({
-        error: omdbData.Error || 'Unable to fetch movie details',
+        error: tmdbData.status_message || 'Unable to fetch movie details',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
