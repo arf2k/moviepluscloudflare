@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
-export default function MovieDetailPage({ token }) {
+export default function MovieDetailPage() {
   const navigate = useNavigate();
   const { movieID } = useParams();
+  const { token } = useAuth(); // Use token from AuthContext
   const [movie, setMovie] = useState(null);
   const [error, setError] = useState('');
 
@@ -59,18 +61,6 @@ export default function MovieDetailPage({ token }) {
           Genres: {movie.genres ? movie.genres.map((g) => g.name).join(', ') : 'N/A'}
         </p>
         <p>Plot: {movie.overview || 'N/A'}</p>
-        <p>
-          Production Companies:{' '}
-          {movie.production_companies
-            ? movie.production_companies.map((p) => p.name).join(', ')
-            : 'N/A'}
-        </p>
-        <p>
-          Languages:{' '}
-          {movie.spoken_languages
-            ? movie.spoken_languages.map((l) => l.english_name).join(', ')
-            : 'N/A'}
-        </p>
       </div>
       <div>
         <button onClick={() => navigate(-1)}>Back</button>
