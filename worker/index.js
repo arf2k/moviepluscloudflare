@@ -2,7 +2,25 @@ import { handleAuth } from './routes/auth.js';
 import { handleSearch } from './routes/searchMovies.js';
 import { handleMovieDetail } from './routes/movieDetail.js';
 import { handleRecommendations } from './routes/recommendations.js';
-import { handleFavorites, handlePreflight } from './routes/favorites.js';
+import { handleFavorites } from './routes/favorites.js';
+
+// Handle preflight
+function handlePreflight(request, origin, allowedOrigins) {
+  console.log("Handling preflight request for origin:", origin);
+  if (origin && allowedOrigins.includes(origin)) {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    });
+  } else {
+    console.warn("Preflight request from disallowed origin:", origin);
+    return new Response('Forbidden', { status: 403 });
+  }
+}
 
 export default {
   async fetch(request, env) {
@@ -88,21 +106,3 @@ export default {
     }
   },
 };
-
-// Handle preflight
-function handlePreflight(request, origin, allowedOrigins) {
-  console.log("Handling preflight request for origin:", origin);
-  if (origin && allowedOrigins.includes(origin)) {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
-  } else {
-    console.warn("Preflight request from disallowed origin:", origin);
-    return new Response('Forbidden', { status: 403 });
-  }
-}

@@ -18,7 +18,7 @@ export async function handleFavorites(request, env) {
   }
 
   // Extract username from the token
-  const decoded = jwt.decode(token);
+  const decoded = await jwt.decode(token);
   const username = decoded.payload.username;
 
   if (method === 'POST') {
@@ -102,21 +102,3 @@ return new Response(
     headers: { 'Content-Type': 'text/plain' },
   });
 }
-
-// Add this to handle CORS properly:
-export default function handlePreflight(request, allowedOrigins) {
-     const origin = request.headers.get('Origin');
-   
-     if (origin && allowedOrigins.includes(origin)) {
-       return new Response(null, {
-         status: 204,
-         headers: {
-           'Access-Control-Allow-Origin': origin,
-           'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-         },
-       });
-     }
-   
-     return new Response('Forbidden', { status: 403 });
-   }
