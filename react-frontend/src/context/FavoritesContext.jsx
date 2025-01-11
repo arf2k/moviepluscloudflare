@@ -1,20 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const FavoritesContext = createContext();
 
-export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
+export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
+  const { token } = useAuth(); // Access the token directly from AuthContext
   const [favorites, setFavorites] = useState([]);
-
-  // Debug token
-  useEffect(() => {
-    console.log('Token in FavoritesProvider:', token);
-  }, [token]);
 
   // Fetch favorites on load
   useEffect(() => {
     async function fetchFavorites() {
       if (!token) {
-        console.warn('No token available for fetching favorites.');
+        console.error('Cannot fetch favorites. Token is missing.');
         return;
       }
 
@@ -23,9 +20,8 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
-
         if (response.ok) {
-          setFavorites(data);
+          setFavorites(data || []);
         } else {
           console.error('Error fetching favorites:', data.error);
         }
@@ -33,6 +29,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
         console.error('Failed to fetch favorites:', err);
       }
     }
+
     fetchFavorites();
   }, [baseWorkerUrl, token]);
 
@@ -80,7 +77,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
       });
 
       if (response.ok) {
-        setFavorites((prev) => prev.filter((movie) => movie.movieId !== movieId));
+        setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
       } else {
         const error = await response.json();
         console.error('Error removing favorite:', error);

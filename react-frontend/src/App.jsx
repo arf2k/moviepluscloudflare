@@ -4,15 +4,15 @@ import { AuthProvider } from './context/AuthContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
-import RecommendationsPage from './pages/RecommendationsPage';
-import FavoritesPage from './pages/FavoritesPage';
 import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import ProtectedRoute from './components/ProtectedRoute';
-
-const baseWorkerUrl = import.meta.env.VITE_API_URL;
+import RecommendationsPage from './pages/RecommendationsPage';
+import FavoritesPage from './pages/FavoritesPage';
 
 export default function App() {
+  const baseWorkerUrl = import.meta.env.VITE_API_URL;
+
   return (
     <AuthProvider>
       <FavoritesProvider baseWorkerUrl={baseWorkerUrl}>
