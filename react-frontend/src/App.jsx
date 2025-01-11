@@ -6,7 +6,7 @@ import MovieDetailPage from './pages/MovieDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import ProtectedRoute from './components/ProtectedRoute';
-import RecommendationsPage from './components/RecommendationsPage';
+import RecommendationsPage from './pages/RecommendationsPage';
 
 export default function App() {
   return (
