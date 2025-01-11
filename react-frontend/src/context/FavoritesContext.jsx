@@ -4,9 +4,10 @@ import { useAuth } from './AuthContext';
 const FavoritesContext = createContext();
 
 export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
-  const { token } = useAuth(); 
+  const { token } = useAuth(); // Access the token directly from AuthContext
   const [favorites, setFavorites] = useState([]);
 
+  // Fetch favorites on load
   useEffect(() => {
     async function fetchFavorites() {
       if (!token) {
@@ -33,33 +34,35 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
   }, [baseWorkerUrl, token]);
 
   const addFavorite = async (movie) => {
-     if (!token) {
-       console.error('Cannot add favorite. Token is missing.');
-       return;
-     }
-   
-     try {
-       const response = await fetch(`${baseWorkerUrl}/favorites`, {
-         method: 'POST',
-         headers: {
-           Authorization: `Bearer ${token}`,
-           'Content-Type': 'application/json',
-         },
-         body: JSON.stringify({
-           movieId: movie.id,
-         }),
-       });
-   
-       if (response.ok) {
-         setFavorites((prev) => [...prev, movie]);
-       } else {
-         const error = await response.json();
-         console.error('Error adding favorite:', error);
-       }
-     } catch (err) {
-       console.error('Failed to add favorite:', err);
-     }
-   };   
+    if (!token) {
+      console.error('Cannot add favorite. Token is missing.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${baseWorkerUrl}/favorites`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          movieId: movie.id, // Pass movieId
+          title: movie.title, // Pass title
+          posterPath: movie.poster_path, // Pass posterPath
+        }),
+      });
+
+      if (response.ok) {
+        setFavorites((prev) => [...prev, { movieId: movie.id, title: movie.title, posterPath: movie.poster_path }]);
+      } else {
+        const error = await response.json();
+        console.error('Error adding favorite:', error);
+      }
+    } catch (err) {
+      console.error('Failed to add favorite:', err);
+    }
+  };
 
   const removeFavorite = async (movieId) => {
     if (!token) {
@@ -78,7 +81,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
       });
 
       if (response.ok) {
-        setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
+        setFavorites((prev) => prev.filter((movie) => movie.movieId !== movieId));
       } else {
         const error = await response.json();
         console.error('Error removing favorite:', error);
