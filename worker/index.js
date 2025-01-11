@@ -2,6 +2,7 @@ import { handleAuth } from './routes/auth.js';
 import { handleSearch } from './routes/searchMovies.js';
 import { handleMovieDetail } from './routes/movieDetail.js';
 import { handleRecommendations } from './routes/recommendations.js';
+import { handleFavorites } from './routes/favorites.js';
 
 export default {
   async fetch(request, env) {
@@ -44,10 +45,13 @@ export default {
         response = await handleMovieDetail(request, env);
       }
 
-
    else if (path === '/recommendations') {
       return handleRecommendations(request, env);
     }
+    if (path.startsWith('/favorites')) {
+      return handleFavorites(request, env, path);
+    }
+
       else {
         console.warn("API path not found:", path);
         response = new Response('Not Found', {
