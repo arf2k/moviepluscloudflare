@@ -5,16 +5,27 @@ const FavoritesContext = createContext();
 export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
   const [favorites, setFavorites] = useState([]);
 
+  // Debug token
+  useEffect(() => {
+    console.log('Token in FavoritesProvider:', token);
+  }, [token]);
+
   // Fetch favorites on load
   useEffect(() => {
     async function fetchFavorites() {
+      if (!token) {
+        console.warn('No token available for fetching favorites.');
+        return;
+      }
+
       try {
         const response = await fetch(`${baseWorkerUrl}/favorites`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
+
         if (response.ok) {
-          setFavorites(data.favorites || []);
+          setFavorites(data);
         } else {
           console.error('Error fetching favorites:', data.error);
         }
@@ -22,10 +33,15 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
         console.error('Failed to fetch favorites:', err);
       }
     }
-    if (token) fetchFavorites();
+    fetchFavorites();
   }, [baseWorkerUrl, token]);
 
   const addFavorite = async (movie) => {
+    if (!token) {
+      console.error('Cannot add favorite. Token is missing.');
+      return;
+    }
+
     try {
       const response = await fetch(`${baseWorkerUrl}/favorites`, {
         method: 'POST',
@@ -35,6 +51,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
         },
         body: JSON.stringify(movie),
       });
+
       if (response.ok) {
         setFavorites((prev) => [...prev, movie]);
       } else {
@@ -47,6 +64,11 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
   };
 
   const removeFavorite = async (movieId) => {
+    if (!token) {
+      console.error('Cannot remove favorite. Token is missing.');
+      return;
+    }
+
     try {
       const response = await fetch(`${baseWorkerUrl}/favorites`, {
         method: 'DELETE',
@@ -56,8 +78,9 @@ export const FavoritesProvider = ({ children, baseWorkerUrl, token }) => {
         },
         body: JSON.stringify({ movieId }),
       });
+
       if (response.ok) {
-        setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));
+        setFavorites((prev) => prev.filter((movie) => movie.movieId !== movieId));
       } else {
         const error = await response.json();
         console.error('Error removing favorite:', error);

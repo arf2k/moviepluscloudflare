@@ -3,12 +3,24 @@ import jwt from '@tsndr/cloudflare-worker-jwt';
 export async function handleFavorites(request, env, path) {
   const { method } = request;
 
-  // Verify JWT
+  // Extract and validate the Authorization token
   const authHeader = request.headers.get('Authorization') || '';
   const token = authHeader.replace('Bearer ', '');
-  const isValid = await jwt.verify(token, env.JWT_SECRET);
 
+  if (!token || token.split('.').length !== 3) {
+    console.error('Invalid token format:', token);
+    return new Response(
+      JSON.stringify({ error: 'Invalid token format' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  const isValid = await jwt.verify(token, env.JWT_SECRET);
   if (!isValid) {
+    console.error('Invalid token during favorites operation:', token);
     return new Response(
       JSON.stringify({ error: 'Invalid token' }),
       {
@@ -18,18 +30,34 @@ export async function handleFavorites(request, env, path) {
     );
   }
 
-  // Extract username from the token
+  // Decode the token to get the username
   const decoded = jwt.decode(token);
-  const username = decoded.payload.username;
+  const username = decoded.payload?.username;
 
-  if (method === 'POST') {
-    try {
+  if (!username) {
+    console.error('Username missing from token payload:', decoded);
+    return new Response(
+      JSON.stringify({ error: 'Invalid token payload' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
+  }
+
+  try {
+    if (method === 'POST') {
+      // Add a favorite
       const { movieId, title, posterPath } = await request.json();
       const favorites = (await env.FAVORITES_KV.get(username, { type: 'json' })) || [];
+
       if (favorites.some((fav) => fav.movieId === movieId)) {
         return new Response(
           JSON.stringify({ message: 'Movie already in favorites' }),
-          { status: 400, headers: { 'Content-Type': 'application/json' } }
+          {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+          }
         );
       }
 
@@ -43,27 +71,18 @@ export async function handleFavorites(request, env, path) {
           headers: { 'Content-Type': 'application/json' },
         }
       );
-    } catch (error) {
-      console.error('Error adding to favorites:', error);
-      return new Response('Internal Server Error', { status: 500 });
-    }
-  }
-
-  if (method === 'GET') {
-    try {
+    } else if (method === 'GET') {
+      // Retrieve all favorites
       const favorites = (await env.FAVORITES_KV.get(username, { type: 'json' })) || [];
       return new Response(
         JSON.stringify(favorites),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
       );
-    } catch (error) {
-      console.error('Error retrieving favorites:', error);
-      return new Response('Internal Server Error', { status: 500 });
-    }
-  }
-
-  if (method === 'DELETE') {
-    try {
+    } else if (method === 'DELETE') {
+      // Remove a favorite
       const { movieId } = await request.json();
       let favorites = (await env.FAVORITES_KV.get(username, { type: 'json' })) || [];
       favorites = favorites.filter((fav) => fav.movieId !== movieId);
@@ -71,16 +90,28 @@ export async function handleFavorites(request, env, path) {
 
       return new Response(
         JSON.stringify({ message: 'Movie removed from favorites' }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
       );
-    } catch (error) {
-      console.error('Error removing from favorites:', error);
-      return new Response('Internal Server Error', { status: 500 });
+    } else {
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        {
+          status: 405,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     }
+  } catch (error) {
+    console.error('Error handling favorites:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal Server Error' }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
-
-  return new Response('Not Found in favorites routes', {
-    status: 404,
-    headers: { 'Content-Type': 'text/plain' },
-  });
 }

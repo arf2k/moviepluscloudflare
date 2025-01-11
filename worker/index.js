@@ -32,39 +32,44 @@ export default {
       // Proceed with routing
       let response;
 
-      // AUTH routes (/register, /login, /verify)
-      if (path === '/register' || path === '/login' || path === '/verify') {
-        response = await handleAuth(request, env, path);
-      }
-      // SEARCH route
-      else if (path === '/search') {
-        response = await handleSearch(request, env, path);
-      }
-      // MOVIE DETAIL route
-      else if (path === '/movie') {
-        response = await handleMovieDetail(request, env);
-      }
+      switch (true) {
+        // AUTH routes (/register, /login, /verify)
+        case ['/register', '/login', '/verify'].includes(path):
+          response = await handleAuth(request, env, path);
+          break;
 
-   else if (path === '/recommendations') {
-      return handleRecommendations(request, env);
-    }
-    if (path.startsWith('/favorites')) {
-      return handleFavorites(request, env, path);
-    }
+        // SEARCH route
+        case path === '/search':
+          response = await handleSearch(request, env, path);
+          break;
 
-      else {
-        console.warn("API path not found:", path);
-        response = new Response('Not Found', {
-          status: 404,
-          headers: { 'Content-Type': 'text/plain' },
-        });
+        // MOVIE DETAIL route
+        case path === '/movie':
+          response = await handleMovieDetail(request, env);
+          break;
+
+        // RECOMMENDATIONS route
+        case path === '/recommendations':
+          response = await handleRecommendations(request, env);
+          break;
+
+        // FAVORITES route
+        case path.startsWith('/favorites'):
+          response = await handleFavorites(request, env, path);
+          break;
+
+        default:
+          console.warn("API path not found:", path);
+          response = new Response('Not Found', {
+            status: 404,
+            headers: { 'Content-Type': 'text/plain' },
+          });
       }
 
       // Set CORS headers on the final response
       if (origin && allowedOrigins.includes(origin)) {
         response.headers.set('Access-Control-Allow-Origin', origin);
       } else {
-        // or set '*', depending on your preference
         response.headers.set('Access-Control-Allow-Origin', '*');
       }
       response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
