@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -11,7 +11,9 @@ export default function MovieDetailPage() {
   const { token } = useAuth();
   const { favorites, addFavorite, removeFavorite } = useFavorites();
   const [movie, setMovie] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
   const [error, setError] = useState('');
+  const [loadingRecs, setLoadingRecs] = useState(true);
 
   useEffect(() => {
     if (!movieID) {
@@ -38,7 +40,28 @@ export default function MovieDetailPage() {
       }
     }
 
+    async function fetchRecommendations() {
+      try {
+        const response = await fetch(`${baseWorkerUrl}/recommendations?id=${encodeURIComponent(movieID)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          const { error } = await response.json();
+          throw new Error(error || 'Unable to fetch recommendations.');
+        }
+
+        const data = await response.json();
+        setRecommendations(data.results || []);
+      } catch (err) {
+        console.error('Recommendations fetch error:', err);
+      } finally {
+        setLoadingRecs(false);
+      }
+    }
+
     fetchMovieDetails();
+    fetchRecommendations();
   }, [movieID, token]);
 
   const isFavorite = favorites.some((fav) => fav.movieId === parseInt(movieID, 10));
@@ -71,9 +94,9 @@ export default function MovieDetailPage() {
           <button
             onClick={() =>
               addFavorite({
-                id: movie.id,
+                movieId: movie.id,
                 title: movie.title,
-                poster_path: movie.poster_path, // Use `poster_path` here
+                posterPath: movie.poster_path,
               })
             }
           >
@@ -81,6 +104,34 @@ export default function MovieDetailPage() {
           </button>
         )}
       </div>
+
+      <div className="recommendations-section">
+        <h2>Recommended Movies</h2>
+        {loadingRecs ? (
+          <p>Loading recommendations...</p>
+        ) : recommendations.length > 0 ? (
+          <div className="recommendations-list">
+            {recommendations.map((rec) => (
+              <div key={rec.id} className="recommendation-item">
+                {rec.poster_path ? (
+                  <img
+                    src={`https://image.tmdb.org/t/p/w200${rec.poster_path}`}
+                    alt={`${rec.title} Poster`}
+                  />
+                ) : (
+                  <div className="placeholder">No Image Available</div>
+                )}
+                <Link to={`/movie/${rec.id}`}>
+                  {rec.title} ({rec.release_date ? new Date(rec.release_date).getFullYear() : 'N/A'})
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No recommendations found.</p>
+        )}
+      </div>
+
       <div>
         <button onClick={() => navigate(-1)}>Back</button>
       </div>
