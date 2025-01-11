@@ -4,7 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import HomePage from './pages/HomePage';
 import MovieDetailPage from './pages/MovieDetailPage';
 import LoginPage from './pages/LoginPage';
-import RegistrationPage from './pages/RegisterPage';
+import RegistrationPage from './pages/RegistrationPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
