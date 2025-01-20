@@ -51,7 +51,7 @@ export default function App() {
             }
           />
           <Route
-            path="/blur-guess-game"
+            path="/random-movie"
             element={
               <ProtectedRoute>
                 <GuessMoviePage />
