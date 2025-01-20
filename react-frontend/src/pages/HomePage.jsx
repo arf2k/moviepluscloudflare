@@ -15,6 +15,9 @@ export default function HomePage() {
       <div className="container">
         <MovieSearch />
         <FavoritesList />
+        <div className="game-link">
+          <Link to="/blur-guess-game">Play Blur Guess Game</Link>
+        </div>
       </div>
     </div>
   );
