@@ -3,6 +3,7 @@ import { handleSearch } from './routes/searchMovies.js';
 import { handleMovieDetail } from './routes/movieDetail.js';
 import { handleRecommendations } from './routes/recommendations.js';
 import { handleFavorites } from './routes/favorites.js';
+import { getRandomMoviePoster } from './routes/randomMovie.js';
 
 // Handle preflight
 function handlePreflight(request, origin, allowedOrigins) {
@@ -74,6 +75,11 @@ export default {
         // FAVORITES route
         case path.startsWith('/favorites'):
           response = await handleFavorites(request, env, path);
+          break;
+
+        // RANDOM MOVIE route
+        case path === '/random-movie':
+          response = await getRandomMoviePoster(request, env);
           break;
 
         default:

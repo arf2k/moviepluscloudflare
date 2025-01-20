@@ -9,7 +9,7 @@ export default function HomePage() {
   return (
     <div>
       <header>
-        <h1>Movie Finder</h1>
+        <h1>Movie Finder TESTING FRONTEND DEV CHANGE</h1>
         <button onClick={logout}>Logout</button>
       </header>
       <div className="container">
