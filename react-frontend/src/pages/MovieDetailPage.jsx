@@ -92,17 +92,18 @@ export default function MovieDetailPage() {
           <button onClick={() => removeFavorite(movie.movieId)}>Remove from Favorites</button>
         ) : (
           <button
-            onClick={() =>
+            onClick={() => {
               console.log('Adding favorite with data:', {
                 id: movie.id,
                 title: movie.title,
                 poster_path: movie.poster_path,
+              });
               addFavorite({
                 movieId: movie.id,
                 title: movie.title,
                 posterPath: movie.poster_path,
-              })
-            }
+              });
+            }}
           >
             Add to Favorites
           </button>
