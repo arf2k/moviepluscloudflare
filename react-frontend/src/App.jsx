@@ -9,7 +9,7 @@ import RegistrationPage from './pages/RegistrationPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import RecommendationsPage from './pages/RecommendationsPage';
 import FavoritesPage from './pages/FavoritesPage';
-import BlurGuessGamePage from './pages/BlurGuessGamePage';
+import GuessMoviePage from './pages/GuessMoviePage';
 
 export default function App() {
   const baseWorkerUrl = import.meta.env.VITE_API_URL;
@@ -54,7 +54,7 @@ export default function App() {
             path="/blur-guess-game"
             element={
               <ProtectedRoute>
-                <BlurGuessGamePage />
+                <GuessMoviePage />
               </ProtectedRoute>
             }
           />
