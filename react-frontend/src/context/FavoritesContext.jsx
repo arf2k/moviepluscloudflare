@@ -73,16 +73,17 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
       return;
     }
   
-    if (!movie || !movie.id || !movie.poster_path) {
+    // Validate the input object
+    if (!movie || !movie.id || !movie.title || !movie.poster_path) {
       console.error('Invalid movie object passed to addFavorite:', movie);
       return;
     }
   
     try {
       const payload = {
-        movieId: movie.id, // Correctly map id
-        title: movie.title, // Correctly map title
-        posterPath: movie.poster_path, // Correctly map poster_path
+        movieId: movie.id,
+        title: movie.title,
+        posterPath: movie.poster_path,
       };
   
       console.log('Payload sent to worker:', payload);
@@ -105,7 +106,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
     } catch (err) {
       console.error('Failed to add favorite:', err);
     }
-  };
+  };  
   
   const removeFavorite = async (movieId) => {
      if (!token) {
