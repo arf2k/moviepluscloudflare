@@ -7,7 +7,6 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
   const { token } = useAuth();
   const [favorites, setFavorites] = useState([]);
 
-  // Fetch favorites on load
   useEffect(() => {
     async function fetchFavorites() {
       if (!token) {
@@ -33,21 +32,61 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
     fetchFavorites();
   }, [baseWorkerUrl, token]);
 
+  // const addFavorite = async (movie) => {
+  //   if (!token) {
+  //     console.error('Cannot add favorite. Token is missing.');
+  //     return;
+  //   }
+
+  //   try {
+  //     const payload = {
+  //       movieId: movie.id,
+  //       title: movie.title,
+  //       posterPath: movie.poster_path, // Ensure correct property name
+  //     };
+
+  //     console.log('Payload sent to worker:', payload);
+
+  //     const response = await fetch(`${baseWorkerUrl}/favorites`, {
+  //       method: 'POST',
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
+
+  //     if (response.ok) {
+  //       setFavorites((prev) => [...prev, payload]);
+  //     } else {
+  //       const error = await response.json();
+  //       console.error('Error adding favorite:', error);
+  //     }
+  //   } catch (err) {
+  //     console.error('Failed to add favorite:', err);
+  //   }
+  // };
+
   const addFavorite = async (movie) => {
     if (!token) {
       console.error('Cannot add favorite. Token is missing.');
       return;
     }
-
+  
+    if (!movie || !movie.id || !movie.poster_path) {
+      console.error('Invalid movie object passed to addFavorite:', movie);
+      return;
+    }
+  
     try {
       const payload = {
-        movieId: movie.id,
-        title: movie.title,
-        posterPath: movie.poster_path, // Ensure correct property name
+        movieId: movie.id, // Correctly map id
+        title: movie.title, // Correctly map title
+        posterPath: movie.poster_path, // Correctly map poster_path
       };
-
+  
       console.log('Payload sent to worker:', payload);
-
+  
       const response = await fetch(`${baseWorkerUrl}/favorites`, {
         method: 'POST',
         headers: {
@@ -56,7 +95,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
         },
         body: JSON.stringify(payload),
       });
-
+  
       if (response.ok) {
         setFavorites((prev) => [...prev, payload]);
       } else {
@@ -67,7 +106,7 @@ export const FavoritesProvider = ({ children, baseWorkerUrl }) => {
       console.error('Failed to add favorite:', err);
     }
   };
-
+  
   const removeFavorite = async (movieId) => {
      if (!token) {
        console.error('Cannot remove favorite. Token is missing.');
