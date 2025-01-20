@@ -1,61 +1,86 @@
-import jwt from '@tsndr/cloudflare-worker-jwt';
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
-export async function getRandomMoviePoster(request, env) {
-  try {
-    console.log("Environment variables:", env);
-    const authHeader = request.headers.get('Authorization') || '';
-    console.log("Authorization header:", authHeader);
-    const token = authHeader.replace('Bearer ', '');
-    console.log("Extracted token:", token);
+const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
-    // Verify JWT
-    const isValid = await jwt.verify(token, env.JWT_SECRET);
-    if (!isValid) {
-      console.warn("Invalid token during random movie fetch:", token);
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        {
-          status: 401,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
+export default function BlurGuessGamePage() {
+  const [movie, setMovie] = useState(null);
+  const [blurLevel, setBlurLevel] = useState(20); // Start with maximum blur
+  const [guess, setGuess] = useState('');
+  const [result, setResult] = useState('');
+     const { token } = useAuth();
+  
 
-    const randomPage = Math.floor(Math.random() * 500) + 1;
-    console.log("Random page number:", randomPage);
-
-    const response = await fetch(
-      `https://api.themoviedb.org/3/movie/popular?page=${randomPage}`,
-      {
+  const fetchRandomMovie = async () => {
+    try {
+      const response = await fetch(`${baseWorkerUrl}/random-movie`, {
         headers: {
-          Authorization: `Bearer ${env.TMDB_API_KEY}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${(token)}`,
         },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch random movie');
       }
-    );
 
-    console.log("TMDb API response status:", response.status);
-    const data = await response.json();
-    console.log("TMDb API response data:", data);
+      const data = await response.json();
+      setMovie(data);
+      setBlurLevel(20); // Reset blur when fetching a new movie
+      setResult('');
+      setGuess('');
+    } catch (error) {
+      console.error('Error fetching random movie:', error);
+    }
+  };
 
-    const randomMovie = data.results[Math.floor(Math.random() * data.results.length)];
-    console.log("Selected random movie:", randomMovie);
+  const handleGuess = () => {
+    if (!movie) return;
+    if (guess.toLowerCase() === movie.title.toLowerCase()) {
+      setResult('Correct!');
+      setBlurLevel(0); // Reveal the image
+    } else {
+      setResult('Try again!');
+    }
+  };
 
-    return new Response(JSON.stringify(randomMovie), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  } catch (error) {
-    console.error('Error in getRandomMoviePoster:', error);
-    return new Response('Internal Server Error', {
-      status: 500,
-      headers: {
-        'Content-Type': 'text/plain',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  }
+  const handleBlurChange = (e) => {
+    setBlurLevel(e.target.value);
+  };
+
+  return (
+    <div className="blur-guess-game">
+      <h1>Guess the Movie</h1>
+      <button onClick={fetchRandomMovie}>Get Random Movie</button>
+      {movie ? (
+        <div className="game-container">
+          <img
+            src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+            alt="Movie Poster"
+            style={{
+              filter: `blur(${blurLevel}px)`,
+              transition: 'filter 0.3s ease',
+            }}
+          />
+          <input
+            type="range"
+            min="0"
+            max="20"
+            value={blurLevel}
+            onChange={handleBlurChange}
+          />
+          <input
+            type="text"
+            placeholder="Your guess..."
+            value={guess}
+            onChange={(e) => setGuess(e.target.value)}
+          />
+          <button onClick={handleGuess}>Submit Guess</button>
+          {result && <p>{result}</p>}
+        </div>
+      ) : (
+        <p>Click "Get Random Movie" to start the game!</p>
+      )}
+    </div>
+  );
 }

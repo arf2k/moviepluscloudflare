@@ -16,7 +16,7 @@ export default function HomePage() {
         <MovieSearch />
         <FavoritesList />
         <div className="game-link">
-          <Link to="/blur-guess-game">Play Blur Guess Game</Link>
+          <Link to="/random-movie">Play Blur Guess Game</Link>
         </div>
       </div>
     </div>
