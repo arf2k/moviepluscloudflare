@@ -158,19 +158,19 @@
 //     </div>
 //   );
 // }
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
 export default function BlurGuessPage() {
-  const { token } = useAuth(); // Use token from Auth context
+  const { token } = useAuth();
   const [randomMovie, setRandomMovie] = useState(null);
   const [blurLevel, setBlurLevel] = useState(20);
   const [guess, setGuess] = useState('');
   const [guesses, setGuesses] = useState(0);
   const [hint, setHint] = useState('');
-  const [gameState, setGameState] = useState('playing'); // 'playing', 'hint', 'correct'
+  const [gameState, setGameState] = useState('playing'); // 'playing', 'hint', 'correct', 'failed'
 
   const fetchRandomMovie = async () => {
     try {
@@ -199,7 +199,7 @@ export default function BlurGuessPage() {
   };
 
   const handleGuess = () => {
-    if (!randomMovie || gameState !== 'playing') return;
+    if (!randomMovie || gameState === 'correct' || gameState === 'failed') return;
 
     if (guess.trim().toLowerCase() === randomMovie.title.toLowerCase()) {
       setGameState('correct');
@@ -207,13 +207,17 @@ export default function BlurGuessPage() {
       const newGuesses = guesses + 1;
       setGuesses(newGuesses);
 
-      if (newGuesses === 2) {
-        provideHint();
+      if (newGuesses === 2 && gameState === 'playing') {
+        provideHint(); // Provide a hint after 2 wrong guesses
         setGameState('hint');
+      } else if (newGuesses === 3) {
+        setGameState('failed');
       } else {
-        setBlurLevel((prev) => Math.max(0, prev - 10)); // Reduce blur
+        setBlurLevel((prev) => Math.max(0, prev - 10)); // Reduce blur for each wrong guess
       }
     }
+
+    setGuess(''); // Clear the input for the next guess
   };
 
   const provideHint = () => {
@@ -221,7 +225,8 @@ export default function BlurGuessPage() {
 
     const hints = [];
     if (randomMovie.release_date) hints.push(`Year: ${new Date(randomMovie.release_date).getFullYear()}`);
-  if (randomMovie.overview) hints.push(`Overview: ${randomMovie.overview.split(' ').slice(0, 10).join(' ')}...`);
+    if (randomMovie.genres && randomMovie.genres.length > 0) hints.push(`Genres: ${randomMovie.genres.join(', ')}`);
+    if (randomMovie.overview) hints.push(`Overview: ${randomMovie.overview.split(' ').slice(0, 10).join(' ')}...`);
     if (randomMovie.original_language) hints.push(`Language: ${randomMovie.original_language}`);
 
     const randomHint = hints[Math.floor(Math.random() * hints.length)];
@@ -244,19 +249,20 @@ export default function BlurGuessPage() {
               filter: `blur(${blurLevel}px)`,
             }}
           />
-          <p>Guesses: {guesses}/2</p>
-          {gameState === 'hint' && <p>Hint: {hint}</p>}
+          <p>Guesses: {guesses}/3</p>
+          {hint && <p>Hint: {hint}</p>}
           <input
             type="text"
             value={guess}
             onChange={(e) => setGuess(e.target.value)}
             placeholder="Enter your guess..."
-            disabled={gameState !== 'playing'}
+            disabled={gameState === 'correct' || gameState === 'failed'}
           />
-          <button onClick={handleGuess} disabled={gameState !== 'playing'}>
+          <button onClick={handleGuess} disabled={gameState === 'correct' || gameState === 'failed'}>
             Submit Guess
           </button>
           {gameState === 'correct' && <p>🎉 Correct! The movie was {randomMovie.title}.</p>}
+          {gameState === 'failed' && <p>❌ Failed! The movie was {randomMovie.title}.</p>}
         </>
       )}
     </div>
