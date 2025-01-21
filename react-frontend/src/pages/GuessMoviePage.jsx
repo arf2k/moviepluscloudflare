@@ -43,6 +43,7 @@
 
 //     if (guess.trim().toLowerCase() === randomMovie.title.toLowerCase()) {
 //       setGameState('correct');
+//       setBlurLevel(0); // Unblur the image on correct guess
 //     } else {
 //       const newGuesses = guesses + 1;
 //       setGuesses(newGuesses);
@@ -52,6 +53,7 @@
 //         setGameState('hint');
 //       } else if (newGuesses === 3) {
 //         setGameState('failed');
+//         setBlurLevel(0); // Unblur the image on failure
 //       } else {
 //         setBlurLevel((prev) => Math.max(0, prev - 10)); // Reduce blur for each wrong guess
 //       }
@@ -102,7 +104,9 @@
 //             Submit Guess
 //           </button>
 //           {gameState === 'correct' && <p>🎉 Correct! The movie was {randomMovie.title}.</p>}
-//           {gameState === 'failed' && <p>❌ Failed! The movie was {randomMovie.title}.</p>}
+//           {gameState === 'failed' && (
+//             <p>❌ Failed! The movie was {randomMovie.title}. The full image is revealed.</p>
+//           )}
 //         </>
 //       )}
 //     </div>
@@ -110,11 +114,13 @@
 // }
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
 export default function BlurGuessPage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [randomMovie, setRandomMovie] = useState(null);
   const [blurLevel, setBlurLevel] = useState(20);
   const [guess, setGuess] = useState('');
@@ -213,9 +219,20 @@ export default function BlurGuessPage() {
           <button onClick={handleGuess} disabled={gameState === 'correct' || gameState === 'failed'}>
             Submit Guess
           </button>
-          {gameState === 'correct' && <p>🎉 Correct! The movie was {randomMovie.title}.</p>}
+          {gameState === 'correct' && (
+            <>
+              <p>🎉 Correct! The movie was {randomMovie.title}.</p>
+              <button onClick={() => navigate(`/movie/${randomMovie.id}`)}>Go to Movie Details</button>
+            </>
+          )}
           {gameState === 'failed' && (
-            <p>❌ Failed! The movie was {randomMovie.title}. The full image is revealed.</p>
+            <>
+              <p>❌ Failed! The movie was {randomMovie.title}. The full image is revealed.</p>
+              <button onClick={() => navigate(`/movie/${randomMovie.id}`)}>Go to Movie Details</button>
+            </>
+          )}
+          {(gameState === 'correct' || gameState === 'failed') && (
+            <button onClick={fetchRandomMovie}>Play Again</button>
           )}
         </>
       )}
