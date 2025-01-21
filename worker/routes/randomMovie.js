@@ -36,6 +36,7 @@ export async function getRandomMoviePoster(request, env) {
        const randomMovie = data.results[Math.floor(Math.random() * data.results.length)];
    
        const movieDetails = {
+          id: randomMovie.id,
          title: randomMovie.title,
          poster_path: randomMovie.poster_path,
          release_date: randomMovie.release_date,
