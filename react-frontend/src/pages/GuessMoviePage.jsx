@@ -1,10 +1,12 @@
 // import React, { useState } from 'react';
 // import { useAuth } from '../context/AuthContext';
+// import { useNavigate } from 'react-router-dom';
 
 // const baseWorkerUrl = import.meta.env.VITE_API_URL;
 
 // export default function BlurGuessPage() {
 //   const { token } = useAuth();
+//   const navigate = useNavigate();
 //   const [randomMovie, setRandomMovie] = useState(null);
 //   const [blurLevel, setBlurLevel] = useState(20);
 //   const [guess, setGuess] = useState('');
@@ -103,9 +105,20 @@
 //           <button onClick={handleGuess} disabled={gameState === 'correct' || gameState === 'failed'}>
 //             Submit Guess
 //           </button>
-//           {gameState === 'correct' && <p>🎉 Correct! The movie was {randomMovie.title}.</p>}
+//           {gameState === 'correct' && (
+//             <>
+//               <p>🎉 Correct! The movie was {randomMovie.title}.</p>
+//               <button onClick={() => navigate(`/movie/${randomMovie.id}`)}>Go to Movie Details</button>
+//             </>
+//           )}
 //           {gameState === 'failed' && (
-//             <p>❌ Failed! The movie was {randomMovie.title}. The full image is revealed.</p>
+//             <>
+//               <p>❌ Failed! The movie was {randomMovie.title}. The full image is revealed.</p>
+//               <button onClick={() => navigate(`/movie/${randomMovie.id}`)}>Go to Movie Details</button>
+//             </>
+//           )}
+//           {(gameState === 'correct' || gameState === 'failed') && (
+//             <button onClick={fetchRandomMovie}>Play Again</button>
 //           )}
 //         </>
 //       )}
@@ -139,6 +152,10 @@ export default function BlurGuessPage() {
       if (!response.ok) throw new Error('Failed to fetch random movie.');
 
       const data = await response.json();
+      if (!data.id) {
+        throw new Error('Random movie does not contain a valid ID.');
+      }
+
       setRandomMovie(data);
       resetGame();
     } catch (error) {
