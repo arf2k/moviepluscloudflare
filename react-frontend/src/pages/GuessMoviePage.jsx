@@ -221,8 +221,7 @@ export default function BlurGuessPage() {
 
     const hints = [];
     if (randomMovie.release_date) hints.push(`Year: ${new Date(randomMovie.release_date).getFullYear()}`);
-    if (randomMovie.genres && randomMovie.genres.length > 0) hints.push(`Genres: ${randomMovie.genres.join(', ')}`);
-    if (randomMovie.overview) hints.push(`Overview: ${randomMovie.overview.split(' ').slice(0, 10).join(' ')}...`);
+  if (randomMovie.overview) hints.push(`Overview: ${randomMovie.overview.split(' ').slice(0, 10).join(' ')}...`);
     if (randomMovie.original_language) hints.push(`Language: ${randomMovie.original_language}`);
 
     const randomHint = hints[Math.floor(Math.random() * hints.length)];

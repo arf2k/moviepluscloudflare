@@ -98,7 +98,6 @@ export async function getRandomMoviePoster(request, env) {
          title: randomMovie.title,
          poster_path: randomMovie.poster_path,
          release_date: randomMovie.release_date,
-         genres: randomMovie.genre_ids,
          overview: randomMovie.overview,
          original_language: randomMovie.original_language,
        };
